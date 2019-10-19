@@ -11,6 +11,7 @@ class App:
         pygame.init()
         self._display_surf = pygame.display.set_mode(self.size, pygame.HWSURFACE | pygame.DOUBLEBUF)
         self._running = True
+        return True
 
     def on_event(self, event):
         if event.type == pygame.QUIT:
