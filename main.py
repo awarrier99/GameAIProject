@@ -1,5 +1,6 @@
 import pygame
 
+
 class App:
     def __init__(self):
         self._running = True
@@ -25,10 +26,10 @@ class App:
         pygame.quit()
 
     def on_execute(self):
-        if self.on_init() == False:
+        if not self.on_init():
             self._running = False
 
-        while (self._running):
+        while self._running:
             for event in pygame.event.get():
                 self.on_event(event)
             self.on_loop()
