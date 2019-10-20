@@ -1,4 +1,5 @@
 import pygame
+from pygame.locals import *
 
 from Player import Player
 
@@ -41,6 +42,39 @@ while mainloop:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 mainloop = False
+
+    move_ticker = 0
+    keys = pygame.key.get_pressed()
+    if keys[K_LEFT]:
+        if move_ticker == 0:
+            move_ticker = 6
+            player.direction += 3
+
+    if keys[K_RIGHT]:
+        if move_ticker == 0:
+            move_ticker = 6
+            player.direction -= 3
+    if keys[K_w]:
+        if move_ticker == 0:
+            move_ticker = 6
+            player.y -= 3
+    if keys[K_a]:
+        if move_ticker == 0:
+            move_ticker = 6
+            player.x -= 3
+    if keys[K_s]:
+        if move_ticker == 0:
+            move_ticker = 6
+            player.y += 3
+    if keys[K_d]:
+        if move_ticker == 0:
+            move_ticker = 6
+            player.x += 3
+
+    if move_ticker > 0:
+        move_ticker -= 1
+
+
     all_sprites.update()
     redraw_game_window()
 
