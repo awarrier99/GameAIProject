@@ -1,4 +1,4 @@
-import math
+import pygame
 import queue
 
 
@@ -11,6 +11,41 @@ class Actions:
     DL = 'Down Left'
     D = 'Down'
     DR = 'Down Right'
+
+
+class Keys:
+    RIGHT = [pygame.K_RIGHT, pygame.K_d]
+    LEFT = [pygame.K_LEFT, pygame.K_a]
+    UP = [pygame.K_UP, pygame.K_w]
+    DOWN = [pygame.K_DOWN, pygame.K_s]
+
+    @classmethod
+    def keyright(cls, keys):
+        if type(keys) is tuple:
+            return keys[cls.RIGHT[0]] or keys[cls.RIGHT[1]]
+        else:
+            return keys == cls.RIGHT[0] or keys == cls.RIGHT[1]
+
+    @classmethod
+    def keyleft(cls, keys):
+        if type(keys) is tuple:
+            return keys[cls.LEFT[0]] or keys[cls.LEFT[1]]
+        else:
+            return keys == cls.LEFT[0] or keys == cls.LEFT[1]
+
+    @classmethod
+    def keyup(cls, keys):
+        if type(keys) is tuple:
+            return keys[cls.UP[0]] or keys[cls.UP[1]]
+        else:
+            return keys == cls.UP[0] or keys == cls.UP[1]
+
+    @classmethod
+    def keydown(cls, keys):
+        if type(keys) is tuple:
+            return keys[cls.DOWN[0]] or keys[cls.DOWN[1]]
+        else:
+            return keys == cls.DOWN[0] or keys == cls.DOWN[1]
 
 
 class Loc:
