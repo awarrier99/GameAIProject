@@ -20,8 +20,8 @@ class Player(pygame.sprite.Sprite):
         self.health = 100
         self.image = Player.rifle_walk[0]
         self.rect = self.image.get_rect()
-        x, y = location
-        self.rect.center = (x, y)
+        self.loc = loc = location
+        self.rect.center = (loc.x, loc.y)
         self.walk_count = 0
 
     def shoot(self, direction):
