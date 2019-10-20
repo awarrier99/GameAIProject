@@ -1,4 +1,6 @@
 import pygame
+from pygame.math import Vector2
+import math
 
 
 class Player(pygame.sprite.Sprite):
@@ -16,7 +18,6 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, location):
         #  init
         pygame.sprite.Sprite.__init__(self)
-        self.direction = 0  # degrees: 0º is facing up
         self.health = 100
         self.image = pygame.image.load('PlayerSprites/Images/rifle/move/survivor-move_rifle_0.png')
         self.image = pygame.transform.scale(self.image, (50, 33))
@@ -25,22 +26,35 @@ class Player(pygame.sprite.Sprite):
         self.loc = loc = location
         self.rect.center = (loc.x, loc.y)
 
+        self.orig_image = self.image
+        self.pos = Vector2(self.loc.x, self.loc.y)  # The original center position/pivot point.
+        self.offset = Vector2(9.346, -2.72)  # We shift the sprite 50 px to the right.
+        self.direction = 0  # degrees: 0º is facing right
+
     def shoot(self, direction):
         pass
         #  shoot bullet
 
+    def rotate(self):
+        self.image = pygame.transform.rotozoom(self.orig_image, -self.direction, 1)
+        # Rotate the offset vector.
+        offset_rotated = self.offset.rotate(self.direction)
+        # Create a new rect with the center of the sprite + the offset.
+        self.rect = self.image.get_rect(center=(self.loc.x, self.loc.y) + offset_rotated)
+
     def update(self):
         print(self.direction)
-        if self.direction > 359:
-            self.direction = 0
-        if self.direction < 0:
-            self.direction = 359
+
+        self.direction %= 360
 
         self.rect.x = self.loc.x
         self.rect.y = self.loc.y
 
-        #
-        # self.image = pygame.transform.rotozoom(self.image, self.direction)
-        # self.rect = self.image.get_rect()
+        x, y = pygame.mouse.get_pos()
+        dx = (x - self.loc.x) or .01
+        dy = (y - self.loc.y)
 
-
+        self.direction = math.degrees(math.atan(dy/dx))
+        if dx < 0:
+            self.direction += 180
+        self.rotate()

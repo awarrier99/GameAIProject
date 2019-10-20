@@ -42,6 +42,7 @@ class Game:
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     self._running = False
+
                 self.handle_keys(event.key)
 
     def handle_keys(self, keys):
