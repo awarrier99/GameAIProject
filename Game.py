@@ -17,22 +17,16 @@ background = background.convert()
 screen.blit(background, (0,0))
 
 # -------- sprites ---------
-player = Player((50, 50))
-walk_count = 0
-max_walk_count = 19
+player = Player((100, 100))
 
+all_sprites = pygame.sprite.Group()
+all_sprites.add(player)
 
 def redraw_game_window():
-    global walk_count
-    global player
+
     screen.blit(background, (0, 0))
 
-    if walk_count > max_walk_count:
-        walk_count = 0
-
-    screen.blit(player.feet_walk[walk_count//3], player.location)
-    screen.blit(player.rifle_walk[walk_count//3], player.location)
-    walk_count += 1
+    all_sprites.draw(screen)
     pygame.display.flip()
 
 
@@ -47,6 +41,6 @@ while mainloop:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 mainloop = False
-
+    all_sprites.update()
     redraw_game_window()
 
