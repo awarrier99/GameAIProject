@@ -21,9 +21,9 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.image.load('PlayerSprites/Images/rifle/move/survivor-move_rifle_0.png')
         self.image = pygame.transform.scale(self.image, (50, 33))
         self.rect = self.image.get_rect()
-        self.x, self.y = location
-        self.rect.center = (self.x, self.y)
-        self.walk_count = 0
+
+        self.loc = loc = location
+        self.rect.center = (loc.x, loc.y)
 
     def shoot(self, direction):
         pass
@@ -36,11 +36,11 @@ class Player(pygame.sprite.Sprite):
         if self.direction < 0:
             self.direction = 359
 
-        self.rect.x = self.x
-        self.rect.y = self.y
+        self.rect.x = self.loc.x
+        self.rect.y = self.loc.y
 
-
-        # self.image = pygame.transform.rotozoom(self.image, self.direction, 1)
+        #
+        # self.image = pygame.transform.rotozoom(self.image, self.direction)
         # self.rect = self.image.get_rect()
 
 
