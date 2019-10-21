@@ -50,14 +50,14 @@ class Keys:
 
 class Loc:
     def __init__(self, x, y):
-        self.x = x
-        self.y = y
+        self.__x = int(x)
+        self.__y = int(y)
 
     def __str__(self):
         return '({}, {})'.format(self.x, self.y)
 
     def __repr__(self):
-        return '({}, {})'.format(self.x, self.y)
+        return 'Loc({}, {})'.format(self.x, self.y)
 
     def __eq__(self, other):
         if not other or type(other) is not Loc:
@@ -67,6 +67,14 @@ class Loc:
 
     def __hash__(self):
         return hash((self.x, self.y))
+
+    @property
+    def x(self):
+        return self.__x
+
+    @property
+    def y(self):
+        return self.__y
 
 
 class Node:

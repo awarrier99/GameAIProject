@@ -1,7 +1,8 @@
 import pygame
 
+from World import World
 from Player import Player
-from util import Loc, Keys
+from util import Loc, Keys, Actions
 
 
 class Game:
@@ -9,10 +10,11 @@ class Game:
         self._running = True
         self.screen = None
         self.all_sprites = pygame.sprite.Group()
-        self.player = Player(Loc(100, 100))
-        self.player_step = 3
+        self.size = self.width, self.height = 658, 420
+        self.player_step = 7
+        self.world = World((int(self.width / self.player_step), int(self.height / self.player_step)), self.player_step)
+        self.player = Player(Loc(33, 33), self.world)
         self.background = None
-        self.size = self.width, self.height = 640, 400
         self.clock = pygame.time.Clock()
         self.FPS = 30
         self.playtime = 0
@@ -47,13 +49,13 @@ class Game:
 
     def handle_keys(self, keys):
         if Keys.keyright(keys):
-            self.player.loc.x += self.player_step
+            self.world.move(self.player, Actions.R)
         if Keys.keyleft(keys):
-            self.player.loc.x -= self.player_step
+            self.world.move(self.player, Actions.L)
         if Keys.keyup(keys):
-            self.player.loc.y -= self.player_step
+            self.world.move(self.player, Actions.U)
         if Keys.keydown(keys):
-            self.player.loc.y += self.player_step
+            self.world.move(self.player, Actions.D)
 
     def mainloop(self):
         while self._running:

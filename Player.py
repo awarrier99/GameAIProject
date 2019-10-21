@@ -1,6 +1,7 @@
 import pygame
-from pygame.math import Vector2
 import math
+
+from pygame.math import Vector2
 
 
 class Player(pygame.sprite.Sprite):
@@ -15,16 +16,17 @@ class Player(pygame.sprite.Sprite):
 
     # feet_offset = rifle_walk[0].get_height() / 3
 
-    def __init__(self, location):
+    def __init__(self, location, world):
         #  init
         pygame.sprite.Sprite.__init__(self)
         self.health = 100
         self.image = pygame.image.load('PlayerSprites/Images/rifle/move/survivor-move_rifle_0.png')
         self.image = pygame.transform.scale(self.image, (50, 33))
         self.rect = self.image.get_rect()
+        self.world = world
 
-        self.loc = loc = location
-        self.rect.center = (loc.x, loc.y)
+        self.loc = location
+        self.rect.center = (self.loc.x, self.loc.y)
 
         self.orig_image = self.image
         self.pos = Vector2(self.loc.x, self.loc.y)  # The original center position/pivot point.
@@ -43,15 +45,13 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=(self.loc.x, self.loc.y) + offset_rotated)
 
     def update(self):
-        print(self.direction)
-
         self.direction %= 360
 
         self.rect.x = self.loc.x
         self.rect.y = self.loc.y
 
         x, y = pygame.mouse.get_pos()
-        dx = (x - self.loc.x) or .01
+        dx = (x - self.loc.x) or 0.0000001
         dy = (y - self.loc.y)
 
         self.direction = math.degrees(math.atan(dy/dx))
