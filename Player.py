@@ -31,7 +31,7 @@ class Player(pygame.sprite.Sprite):
         self.pos = Vector2(self.loc.x, self.loc.y)  # The original center position/pivot point.
         self.offset = Vector2(9.346, -2.72)  # We shift the sprite 50 px to the right.
         self.direction = 0  # degrees: 0º is facing right
-        self.fov = 80  # degrees
+        self.fov = 65  # degrees
 
     def shoot(self, direction):
         pass

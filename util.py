@@ -145,7 +145,6 @@ class PriorityQueue:
 
 def dist(a, b):
     if type(a) is Node and type(b) is Node:
-        print(a)
         dx = abs(a.loc.x - b.loc.x)
         dy = abs(a.loc.y - b.loc.y)
     elif type(a) is Loc and type(b) is Loc:

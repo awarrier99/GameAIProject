@@ -16,13 +16,11 @@ class World:
         self.goal_loc = Loc(30, 20)
         self.move_frames = 7
         self.obj = None
-        self.start_loc = None
-        self.end_loc = None
         self.frame = None
         self.frames = range(self.move_frames)
 
     def to_pixels(self, grid_loc):
-        return Loc((grid_loc.x * self.ppg) - int(self.ppg / 2), (grid_loc.y * self.ppg) - int(self.ppg / 2))
+        return Loc((grid_loc.x * self.ppg) + int(self.ppg / 2) + 1, (grid_loc.y * self.ppg) + int(self.ppg / 2) + 1)
 
     def to_grids(self, pixel_loc):
         return Loc((int(pixel_loc.x / self.ppg)), int(pixel_loc.y / self.ppg))
@@ -30,7 +28,7 @@ class World:
     def update(self):
 
         self.path = pathfind(self.grid, Node(self.to_grids(self.player.loc)), Node(self.goal_loc))
-
+        print(self.to_grids(self.player.loc))
         if self.frame == self.move_frames:
             self.obj = self.frame = self.start_loc = self.end_loc = None
         if self.obj:
@@ -38,30 +36,15 @@ class World:
             self.obj.loc = obj_loc
             self.frame += 1
 
-    def draw(self, screen):
-        black = 0, 0, 0
-        green = 0, 255, 0
-        i = 0
-        skip = 0
-        while i <= self.width:
-            pygame.draw.line(screen, black, (i, 0), (i, self.height))
-            pygame.draw.line(screen, black, (0, i), (self.width, i))
-            if skip == self.ppg - 1:
-                skip = 1
-            else:
-                skip = self.ppg - 1
-            i += skip
-
-        for wall_center in self.grid.walls:
-            wall_x, wall_y = wall_center
-            wall_p = self.to_pixels(Loc(wall_x + 1, wall_y + 1))
-            pygame.draw.rect(screen, black, (wall_p.x - self.ppg / 2, wall_p.y - self.ppg / 2, self.ppg, self.ppg))
-
-        for loc in self.path:
-            path_x = loc[1].x
-            path_y = loc[1].y
-            path_p = self.to_pixels(Loc(path_x + 1, path_y + 1))
-            pygame.draw.rect(screen, green, (path_p.x - self.ppg / 2, path_p.y - self.ppg / 2, self.ppg, self.ppg))
+    def move(self, obj, action):
+        if not self.obj:
+            direction = World.directions[World.actions.index(action)]
+            self.obj = obj
+            self.start_loc = obj.loc
+            loc = self.to_grids(obj.loc)
+            end_loc = Loc(loc.x + direction[0], loc.y + direction[1])
+            self.end_loc = self.to_pixels(end_loc)
+            self.frame = 0
 
     def create_wall(self, last_grid):
         x, y = pygame.mouse.get_pos()
@@ -76,13 +59,31 @@ class World:
                 self.grid.walls.remove((grid_x, grid_y))
         return grid_x, grid_y
 
-    def move(self, obj, action):
+    def draw(self, screen):
+        black = 0, 0, 0
+        green = 0, 255, 0
+        red = 255, 0, 0
+        i = 0
+        skip = 0
+        while i <= self.width:
+            pygame.draw.line(screen, black, (i, 0), (i, self.height))
+            pygame.draw.line(screen, black, (0, i), (self.width, i))
+            if skip == self.ppg - 1:
+                skip = 1
+            else:
+                skip = self.ppg - 1
+            i += skip
 
-        if not self.obj:
-            direction = World.directions[World.actions.index(action)]
-            self.obj = obj
-            self.start_loc = obj.loc
-            loc = self.to_grids(obj.loc)
-            end_loc = Loc(loc.x + direction[0], loc.y + direction[1])
-            self.end_loc = self.to_pixels(end_loc)
-            self.frame = 0
+        for wall_center in self.grid.walls:
+            wall_x, wall_y = wall_center
+            wall_p = self.to_pixels(Loc(wall_x, wall_y))
+            pygame.draw.rect(screen, black, (wall_p.x - self.ppg / 2, wall_p.y - self.ppg / 2, self.ppg, self.ppg))
+
+        for loc in self.path:
+            path_x = loc[1].x
+            path_y = loc[1].y
+            path_p = self.to_pixels(Loc(path_x22, path_y))
+            if loc[1] == self.goal_loc:
+                pygame.draw.rect(screen, red, (path_p.x - self.ppg / 2, path_p.y - self.ppg / 2, self.ppg, self.ppg))
+            else:
+                pygame.draw.rect(screen, green, (path_p.x - self.ppg / 2, path_p.y - self.ppg / 2, self.ppg, self.ppg))

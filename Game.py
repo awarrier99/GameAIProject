@@ -25,6 +25,7 @@ class Game:
         self.last_grid = (0, 0)
         self.mouse_down = False
         self.key_1 = False
+        self.key_2 = False
 
     def setup(self):
         pygame.init()
@@ -55,18 +56,24 @@ class Game:
                     self._running = False
                 if event.key == pygame.K_1:
                     self.key_1 = True
+                if event.key == pygame.K_2:
+                    self.key_2 = True
                 self.handle_keys(event.key)
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_1:
                     self.key_1 = False
+                if event.key == pygame.K_2:
+                    self.key_2 = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 self.mouse_down = True
-                print('gay')
             elif event.type == pygame.MOUSEBUTTONUP:
                 self.mouse_down = False
                 self.last_grid = (0, 0)
         if self.mouse_down and self.key_1:
             self.last_grid = self.world.create_wall(self.last_grid)
+        if self.mouse_down and self.key_2:
+            x, y = pygame.mouse.get_pos()
+            self.world.goal_loc = self.world.to_grids(Loc(x, y))
 
     def handle_keys(self, keys):
         if Keys.upright(keys):
