@@ -1,36 +1,38 @@
 import pygame
 
 from Grid import Grid
-from util import Loc, Actions, pathfind, Node, lerp
+from util import Loc, pathfind, Node, lerp, directions, actions, Queue
 
 
 class World:
-    directions = [(-1, -1), (0, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (0, 1), (1, 1)]
-    actions = [getattr(Actions, k) for k in dict(vars(Actions)).keys() if k.find('_') == -1]
-
     def __init__(self, size, ppg):
         self.size = self.width, self.height = size
         self.ppg = ppg
         self.grid = Grid(int(self.width / self.ppg), int(self.height / self.ppg))
         self.path = []
         self.goal_loc = Loc(30, 20)
-        self.move_frames = 7
+        self.move_frames = 5
         self.obj = None
         self.frame = None
         self.frames = range(self.move_frames)
+        self.player = None
+        self.start_loc = None
+        self.end_loc = None
+        self.moves = Queue()
 
     def to_pixels(self, grid_loc):
         return Loc((grid_loc.x * self.ppg) + int(self.ppg / 2) + 1, (grid_loc.y * self.ppg) + int(self.ppg / 2) + 1)
 
     def to_grids(self, pixel_loc):
-        return Loc((int(pixel_loc.x / self.ppg)), int(pixel_loc.y / self.ppg))
+        return Loc(int(pixel_loc.x / self.ppg), int(pixel_loc.y / self.ppg))
 
     def update(self):
+        #self.path = pathfind(self.grid, Node(self.to_grids(self.player.loc)), Node(self.goal_loc))
 
-        self.path = pathfind(self.grid, Node(self.to_grids(self.player.loc)), Node(self.goal_loc))
-        print(self.to_grids(self.player.loc))
         if self.frame == self.move_frames:
             self.obj = self.frame = self.start_loc = self.end_loc = None
+            if not self.moves.empty():
+                self.move(*self.moves.pop())
         if self.obj:
             obj_loc = lerp(self.frame, self.frames, self.start_loc, self.end_loc)
             self.obj.loc = obj_loc
@@ -38,13 +40,15 @@ class World:
 
     def move(self, obj, action):
         if not self.obj:
-            direction = World.directions[World.actions.index(action)]
+            direction = directions[actions.index(action)]
             self.obj = obj
             self.start_loc = obj.loc
             loc = self.to_grids(obj.loc)
             end_loc = Loc(loc.x + direction[0], loc.y + direction[1])
             self.end_loc = self.to_pixels(end_loc)
             self.frame = 0
+        elif self.frame == self.move_frames - 2:
+            self.moves.push((obj, action))
 
     def create_wall(self, last_grid):
         x, y = pygame.mouse.get_pos()
@@ -82,7 +86,7 @@ class World:
         for loc in self.path:
             path_x = loc[1].x
             path_y = loc[1].y
-            path_p = self.to_pixels(Loc(path_x22, path_y))
+            path_p = self.to_pixels(Loc(path_x, path_y))
             if loc[1] == self.goal_loc:
                 pygame.draw.rect(screen, red, (path_p.x - self.ppg / 2, path_p.y - self.ppg / 2, self.ppg, self.ppg))
             else:

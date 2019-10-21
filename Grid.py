@@ -1,4 +1,4 @@
-from util import Node, Wall, Actions, Loc
+from util import Node, Wall, Loc, directions, actions
 
 
 class Grid:
@@ -12,15 +12,13 @@ class Grid:
 
     def neighbors(self, node):
         node_list = []
-        directions = [(-1, -1), (0, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (0, 1), (1, 1)]
-        actions = [k for k in dict(vars(Actions)).keys() if k.find('_') == -1]
 
         for idx, dr in enumerate(directions):
             loc = Loc(node.loc.x + dr[0], node.loc.y + dr[1])
             if self.is_valid(loc):
                 n = self[loc.x][loc.y]
                 if not n.is_wall():
-                    n.action = getattr(Actions, actions[idx])
+                    n.action = actions[idx]
                     n.cost = 1
                     node_list.append(n)
 

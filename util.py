@@ -1,6 +1,9 @@
 import pygame
 import queue
-from operator import itemgetter
+
+
+directions = [(-1, -1), (0, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (0, 1), (1, 1)]
+actions = ['Up Left', 'Up', 'Up Right', 'Left', 'Right', 'Down Left', 'Down', 'Down Right']
 
 
 class Actions:
@@ -130,16 +133,32 @@ class Wall(Node):
         self._is_wall = True
 
 
-class PriorityQueue:
+class Queue:
     def __init__(self):
-        self._pq = queue.PriorityQueue()
+        self.__q = queue.Queue()
 
-    def push(self, item, priority):
-        self._pq.put((priority, item))
+    def empty(self):
+        return self.__q.empty()
+
+    def push(self, item):
+        self.__q.put(item)
 
     def pop(self):
-        if not self._pq.empty():
-            return self._pq.get()[1]
+        if not self.__q.empty():
+            return self.__q.get()
+        return None
+
+
+class PriorityQueue:
+    def __init__(self):
+        self.__pq = queue.PriorityQueue()
+
+    def push(self, item, priority):
+        self.__pq.put((priority, item))
+
+    def pop(self):
+        if not self.__pq.empty():
+            return self.__pq.get()[1]
         return None
 
 

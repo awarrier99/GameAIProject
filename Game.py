@@ -1,6 +1,5 @@
 import pygame
 
-from World import World
 from Player import Player
 from util import Loc, Keys, Actions
 from VisualSensors import VisualSensors
@@ -58,7 +57,6 @@ class Game:
                     self.key_1 = True
                 if event.key == pygame.K_2:
                     self.key_2 = True
-                self.handle_keys(event.key)
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_1:
                     self.key_1 = False
