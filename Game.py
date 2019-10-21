@@ -18,7 +18,7 @@ class Game:
         self.world.player = self.player
         self.background = None
         self.clock = pygame.time.Clock()
-        self.FPS = 30
+        self.FPS = 60
         self.playtime = 0
         self.visual_sensors = None
         self.last_grid = (0, 0)
@@ -95,6 +95,7 @@ class Game:
         while self._running:
             milliseconds = self.clock.tick(self.FPS)
             self.playtime += milliseconds / 1000.0
+            pygame.display.set_caption("James and Ashvin's (autistic) 'AI'  FPS: " + str(round(self.clock.get_fps(), 1)))
             self.check_event_queue()
             self.handle_keys(pygame.key.get_pressed())
             self.all_sprites.update()

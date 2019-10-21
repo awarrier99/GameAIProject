@@ -11,7 +11,7 @@ class World:
         self.grid = Grid(int(self.width / self.ppg), int(self.height / self.ppg))
         self.path = []
         self.goal_loc = Loc(30, 20)
-        self.move_frames = 5
+        self.move_frames = 10
         self.obj = None
         self.frame = None
         self.start_loc = None
@@ -47,7 +47,7 @@ class World:
             direction = directions[actions.index(action)]
             loc = self.to_grids(obj.loc)
             end_loc = Loc(loc.x + direction[0], loc.y + direction[1])
-            if not self.grid[end_loc.x][end_loc.y].is_wall() and loc.x < self.grid.width and loc.y < self.grid.height:
+            if not self.grid[end_loc.x][end_loc.y].is_wall():
                 self.obj = obj
                 self.start_loc = obj.loc
                 self.end_loc = self.to_pixels(end_loc)
