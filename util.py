@@ -1,5 +1,6 @@
 import pygame
 import queue
+from operator import itemgetter
 
 
 class Actions:
@@ -170,3 +171,16 @@ def pathfind(grid, start, end, heuristic=euclidean_heuristic):
         curr = curr.parent
 
     return path
+
+
+def lerp(t, times, points):
+    getx, gety = itemgetter(0), itemgetter(1)
+    tmin, tmax = min(times), max(times)
+    dt = (t - tmin) / (tmax - tmin)
+
+    xmin = min(getx(point) for point in points)
+    xmax = max(getx(point) for point in points)
+    ymin = min(gety(point) for point in points)
+    ymax = max(gety(point) for point in points)
+
+    return dt * (xmax - xmin) + xmin, dt * (ymax - ymin) + ymin

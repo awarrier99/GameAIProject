@@ -3,25 +3,30 @@ import pygame
 from World import World
 from Player import Player
 from util import Loc, Keys, Actions
+from VisualSensors import VisualSensors
+from World import World
 
 
 class Game:
+
     def __init__(self):
         self._running = True
         self.screen = None
+        self.size = self.width, self.height = 665, 437
         self.all_sprites = pygame.sprite.Group()
-        self.size = self.width, self.height = 658, 420
         self.player_step = 7
         self.world = World((int(self.width / self.player_step), int(self.height / self.player_step)), self.player_step)
-        self.player = Player(Loc(33, 33), self.world)
+        self.player = Player(Loc(33, 33))
         self.background = None
         self.clock = pygame.time.Clock()
         self.FPS = 30
         self.playtime = 0
+        self.visual_sensors = None
 
     def setup(self):
         pygame.init()
-        self.screen = pygame.display.set_mode((640, 480), pygame.HWACCEL | pygame.DOUBLEBUF)
+        self.screen = pygame.display.set_mode(self.size, pygame.HWACCEL | pygame.DOUBLEBUF)
+        self.visual_sensors = VisualSensors(self.player)
         pygame.display.set_caption("James and Ashvins Autistic AI")
 
         self.all_sprites.add(self.player)
@@ -33,9 +38,12 @@ class Game:
 
     def redraw(self):
         self.screen.blit(self.background, (0, 0))
-
+        self.world.draw(self.screen)
         self.all_sprites.draw(self.screen)
+        self.visual_sensors.draw(self.screen)
         pygame.display.flip()
+
+    count = 0
 
     def check_event_queue(self):
         for event in pygame.event.get():
@@ -44,6 +52,8 @@ class Game:
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     self._running = False
+                if event.type == pygame.MOUSEBUTTONUP:
+                    self.world.create_wall()
 
                 self.handle_keys(event.key)
 
@@ -64,6 +74,8 @@ class Game:
             self.check_event_queue()
             self.handle_keys(pygame.key.get_pressed())
             self.all_sprites.update()
+            self.visual_sensors.update()
+            self.world.update()
             self.redraw()
 
     def cleanup(self):
