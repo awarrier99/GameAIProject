@@ -31,8 +31,6 @@ class World:
 
         self.path = pathfind(self.grid, Node(self.to_grids(self.player.loc)), Node(self.goal_loc))
 
-
->>>>>>> Stashed changes
         if self.frame == self.move_frames:
             self.obj = self.frame = self.start_loc = self.end_loc = None
         if self.obj:
@@ -79,10 +77,7 @@ class World:
         return grid_x, grid_y
 
     def move(self, obj, action):
-<<<<<<< Updated upstream
-=======
-        print(action)
->>>>>>> Stashed changes
+
         if not self.obj:
             direction = World.directions[World.actions.index(action)]
             self.obj = obj
