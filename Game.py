@@ -13,9 +13,9 @@ class Game:
         self.screen = None
         self.size = self.width, self.height = 665, 437
         self.all_sprites = pygame.sprite.Group()
-        self.player_step = 7
+        self.player_step = 19
         self.world = World((self.width, self.height), self.player_step)
-        self.player = Player(Loc(33, 33))
+        self.player = Player(self.world.to_pixels(Loc(2, 2)))
         self.background = None
         self.clock = pygame.time.Clock()
         self.FPS = 30
@@ -57,13 +57,21 @@ class Game:
                 self.handle_keys(event.key)
 
     def handle_keys(self, keys):
-        if Keys.keyright(keys):
+        if Keys.upright(keys):
+            self.world.move(self.player, Actions.UR)
+        elif Keys.downright(keys):
+            self.world.move(self.player, Actions.DR)
+        elif Keys.right(keys):
             self.world.move(self.player, Actions.R)
-        if Keys.keyleft(keys):
+        elif Keys.upleft(keys):
+            self.world.move(self.player, Actions.UL)
+        elif Keys.downleft(keys):
+            self.world.move(self.player, Actions.DL)
+        elif Keys.left(keys):
             self.world.move(self.player, Actions.L)
-        if Keys.keyup(keys):
+        elif Keys.up(keys):
             self.world.move(self.player, Actions.U)
-        if Keys.keydown(keys):
+        elif Keys.down(keys):
             self.world.move(self.player, Actions.D)
 
     def mainloop(self):

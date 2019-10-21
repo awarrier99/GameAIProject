@@ -21,28 +21,44 @@ class Keys:
     DOWN = [pygame.K_DOWN, pygame.K_s]
 
     @classmethod
-    def keyright(cls, keys):
+    def right(cls, keys):
         if type(keys) is tuple:
             return keys[cls.RIGHT[0]] or keys[cls.RIGHT[1]]
         else:
             return keys == cls.RIGHT[0] or keys == cls.RIGHT[1]
 
     @classmethod
-    def keyleft(cls, keys):
+    def upright(cls, keys):
+        return cls.right(keys) and cls.up(keys)
+
+    @classmethod
+    def downright(cls, keys):
+        return cls.right(keys) and cls.down(keys)
+
+    @classmethod
+    def left(cls, keys):
         if type(keys) is tuple:
             return keys[cls.LEFT[0]] or keys[cls.LEFT[1]]
         else:
             return keys == cls.LEFT[0] or keys == cls.LEFT[1]
 
     @classmethod
-    def keyup(cls, keys):
+    def upleft(cls, keys):
+        return cls.left(keys) and cls.up(keys)
+
+    @classmethod
+    def downleft(cls, keys):
+        return cls.left(keys) and cls.down(keys)
+
+    @classmethod
+    def up(cls, keys):
         if type(keys) is tuple:
             return keys[cls.UP[0]] or keys[cls.UP[1]]
         else:
             return keys == cls.UP[0] or keys == cls.UP[1]
 
     @classmethod
-    def keydown(cls, keys):
+    def down(cls, keys):
         if type(keys) is tuple:
             return keys[cls.DOWN[0]] or keys[cls.DOWN[1]]
         else:
@@ -173,14 +189,8 @@ def pathfind(grid, start, end, heuristic=euclidean_heuristic):
     return path
 
 
-def lerp(t, times, points):
-    getx, gety = itemgetter(0), itemgetter(1)
+def lerp(t, times, start, end):
     tmin, tmax = min(times), max(times)
     dt = (t - tmin) / (tmax - tmin)
 
-    xmin = min(getx(point) for point in points)
-    xmax = max(getx(point) for point in points)
-    ymin = min(gety(point) for point in points)
-    ymax = max(gety(point) for point in points)
-
-    return dt * (xmax - xmin) + xmin, dt * (ymax - ymin) + ymin
+    return Loc(dt * (end.x - start.x) + start.x, dt * (end.y - start.y) + start.y)
