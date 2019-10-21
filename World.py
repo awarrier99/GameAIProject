@@ -12,7 +12,6 @@ class World:
         self.size = self.width, self.height = size
         self.ppg = ppg
         self.grid = Grid(int(self.width / self.ppg), int(self.height / self.ppg))
-        self.wall_list = None
 
     def to_pixels(self, grid_loc):
         return Loc((grid_loc.x * self.ppg) - int(self.ppg / 2), (grid_loc.y * self.ppg) - int(self.ppg / 2))
@@ -30,18 +29,29 @@ class World:
         while i <= self.width:
             pygame.draw.line(screen, black, (i, 0), (i, self.height))
             pygame.draw.line(screen, black, (0, i), (self.width, i))
-            if skip == 20:
+            if skip == self.ppg - 1:
                 skip = 1
             else:
-                skip = 20
+                skip = self.ppg - 1
             i += skip
 
-    def create_wall(self):
-        x, y = pygame.mouse.get_pos()
-        grid_x = x / 19
-        grid_y = y / 19
+        for wall_center in self.grid.walls:
+            wall_x, wall_y = wall_center
+            wall_p = self.to_pixels(Loc(wall_x + 1, wall_y + 1))
+            pygame.draw.rect(screen, black, (wall_p.x - self.ppg / 2, wall_p.y - self.ppg / 2, self.ppg, self.ppg))
 
-        self.grid[grid_x][grid_y] = 'W'
+    def create_wall(self, last_grid):
+        x, y = pygame.mouse.get_pos()
+        grid_x = int(x / self.ppg)
+        grid_y = int(y / self.ppg)
+        if not last_grid == (grid_x, grid_y):
+            if (grid_x, grid_y) not in self.grid.walls:
+                self.grid[grid_x][grid_y] = 'W'
+                self.grid.walls.append((grid_x, grid_y))
+            else:
+                self.grid[grid_x][grid_y] = 'N'
+                self.grid.walls.remove((grid_x, grid_y))
+        return grid_x, grid_y
 
     def move(self, obj, action):
         direction = World.directions[World.actions.index(action)]

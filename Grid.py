@@ -5,8 +5,8 @@ class Grid:
     def __init__(self, x, y, walls=[]):
         self.size = self.width, self.height = x, y
         self._grid = [['N' for _ in range(self.height)] for _ in range(self.width)]
-        self._walls = walls
-        for wall in self._walls:
+        self.walls = walls
+        for wall in self.walls:
             self._grid[wall.x][wall.y] = 'W'
         self.__first = None
 
@@ -49,7 +49,6 @@ class Grid:
             string += '\n'
 
         return string
-
 
 class GridCol:
     def __init__(self, col_num, grid):
