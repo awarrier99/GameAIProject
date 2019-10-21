@@ -1,7 +1,10 @@
 import pygame
 
 from Grid import Grid
+from AI import AI
 from util import Loc, pathfind, Node, lerp, directions, actions, Queue
+from multiprocessing import Queue as MQueue
+from traceback import print_exception
 
 
 class World:
@@ -20,6 +23,16 @@ class World:
         self.player = None
         self.moves = Queue()
         self.count = 0
+        self.mqueue = MQueue()
+        self.ai = AI(self.grid, self.mqueue, self.ai_callback, self.ai_error_callback)
+
+    def ai_callback(self, result):
+        self.path = result
+
+    def ai_error_callback(self, err):
+        print('AI Task failed')
+        print_exception(type(err), err, None)
+        self.ai = AI(self.grid, self.mqueue, lambda r: self.ai_callback(r), lambda e: self.ai_error_callback(e))
 
     def to_pixels(self, grid_loc):
         return Loc((grid_loc.x * self.ppg) + int(self.ppg / 2) + 1, (grid_loc.y * self.ppg) + int(self.ppg / 2) + 1)
@@ -28,10 +41,7 @@ class World:
         return Loc(int(pixel_loc.x / self.ppg), int(pixel_loc.y / self.ppg))
 
     def update(self):
-        if self.count > 20:
-            # self.path = pathfind(self.grid, Node(self.to_grids(self.player.loc)), Node(self.goal_loc))
-            self.count = 0
-        self.count += 1
+        self.ai.pathfind(Node(self.to_grids(self.player.loc)), Node(self.goal_loc))
 
         if self.frame == self.move_frames:
             self.obj = self.frame = self.start_loc = self.end_loc = None

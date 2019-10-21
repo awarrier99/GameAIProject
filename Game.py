@@ -105,6 +105,8 @@ class Game:
 
     def cleanup(self):
         self.background = self.screen = self.all_sprites = None
+        self.world.ai._pool.terminate()
+        self.world.ai._pool.join()
         pygame.quit()
 
     def run(self):

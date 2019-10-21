@@ -112,7 +112,7 @@ class Node:
         return '{}{}'.format('W' if self.is_wall() else 'N', str(self.loc))
 
     def __repr__(self):
-        return '{}{}'.format('Wall' if self.is_wall() else 'Node', repr(self.loc))
+        return '{}({})'.format('Wall' if self.is_wall() else 'Node', repr(self.loc))
 
     def __eq__(self, other):
         if not other or type(other) is not Node:
@@ -152,6 +152,9 @@ class Queue:
 class PriorityQueue:
     def __init__(self):
         self.__pq = queue.PriorityQueue()
+
+    def empty(self):
+        return self.__pq.empty()
 
     def push(self, item, priority):
         self.__pq.put((priority, item))
@@ -197,6 +200,8 @@ def pathfind(grid, start, end, heuristic=euclidean_heuristic):
                     priority += heuristic(neighbor, end)
                 nodes.push(neighbor, priority)
 
+        if nodes.empty():
+            break
         current = nodes.pop()
 
     path = []

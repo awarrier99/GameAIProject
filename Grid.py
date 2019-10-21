@@ -11,18 +11,28 @@ class Grid:
         self.__first = None
 
     def neighbors(self, node):
+        if not node:
+            return []
+
         node_list = []
 
         for idx, dr in enumerate(directions):
             loc = Loc(node.loc.x + dr[0], node.loc.y + dr[1])
             if self.is_valid(loc):
                 n = self[loc.x][loc.y]
-                if not n.is_wall():
+                if not n.is_wall() and not self.is_blocked(node, dr):
                     n.action = actions[idx]
                     n.cost = 1
                     node_list.append(n)
 
         return node_list
+
+    def is_blocked(self, node, direction):
+        if direction[0] == 0 or direction[1] == 0:
+            return False
+        adjacent1 = self[node.loc.x + direction[0]][node.loc.y]
+        adjacent2 = self[node.loc.x][node.loc.y + direction[1]]
+        return adjacent1.is_wall() and adjacent2.is_wall()
 
     def is_valid(self, loc):
         if loc.x < 0 or loc.y < 0:
