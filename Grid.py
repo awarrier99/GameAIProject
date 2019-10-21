@@ -50,6 +50,7 @@ class Grid:
 
         return string
 
+
 class GridCol:
     def __init__(self, col_num, grid):
         self._col_num = col_num
@@ -57,9 +58,9 @@ class GridCol:
 
     def __getitem__(self, idx):
         if self._grid[self._col_num][idx] == 'W':
-            return Wall(self._col_num, idx)
+            return Wall(Loc(self._col_num, idx))
 
-        return Node(self._col_num, idx)
+        return Node(Loc(self._col_num, idx))
 
     def __setitem__(self, idx, value):
         self._grid[self._col_num][idx] = value
