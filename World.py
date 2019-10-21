@@ -14,11 +14,12 @@ class World:
         self.move_frames = 5
         self.obj = None
         self.frame = None
-        self.frames = range(self.move_frames)
-        self.player = None
         self.start_loc = None
         self.end_loc = None
+        self.frames = range(self.move_frames)
+        self.player = None
         self.moves = Queue()
+        self.count = 0
 
     def to_pixels(self, grid_loc):
         return Loc((grid_loc.x * self.ppg) + int(self.ppg / 2) + 1, (grid_loc.y * self.ppg) + int(self.ppg / 2) + 1)
@@ -27,7 +28,10 @@ class World:
         return Loc(int(pixel_loc.x / self.ppg), int(pixel_loc.y / self.ppg))
 
     def update(self):
-        #self.path = pathfind(self.grid, Node(self.to_grids(self.player.loc)), Node(self.goal_loc))
+        if self.count > 20:
+            self.path = pathfind(self.grid, Node(self.to_grids(self.player.loc)), Node(self.goal_loc))
+            self.count = 0
+        self.count += 1
 
         if self.frame == self.move_frames:
             self.obj = self.frame = self.start_loc = self.end_loc = None
@@ -41,12 +45,13 @@ class World:
     def move(self, obj, action):
         if not self.obj:
             direction = directions[actions.index(action)]
-            self.obj = obj
-            self.start_loc = obj.loc
             loc = self.to_grids(obj.loc)
             end_loc = Loc(loc.x + direction[0], loc.y + direction[1])
-            self.end_loc = self.to_pixels(end_loc)
-            self.frame = 0
+            if not self.grid[end_loc.x][end_loc.y].is_wall():
+                self.obj = obj
+                self.start_loc = obj.loc
+                self.end_loc = self.to_pixels(end_loc)
+                self.frame = 0
         elif self.frame == self.move_frames - 2:
             self.moves.push((obj, action))
 
