@@ -8,14 +8,13 @@ from World import World
 
 
 class Game:
-
     def __init__(self):
         self._running = True
         self.screen = None
         self.size = self.width, self.height = 665, 437
         self.all_sprites = pygame.sprite.Group()
         self.player_step = 7
-        self.world = World((int(self.width / self.player_step), int(self.height / self.player_step)), self.player_step)
+        self.world = World((self.width, self.height), self.player_step)
         self.player = Player(Loc(33, 33))
         self.background = None
         self.clock = pygame.time.Clock()

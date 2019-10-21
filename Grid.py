@@ -7,7 +7,7 @@ class Grid:
         self._grid = [['N' for _ in range(self.height)] for _ in range(self.width)]
         self._walls = walls
         for wall in self._walls:
-            self._grid[wall[0]][wall[1]] = 'W'
+            self._grid[wall.x][wall.y] = 'W'
         self.__first = None
 
     def neighbors(self, node):

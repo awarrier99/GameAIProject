@@ -10,8 +10,8 @@ class World:
 
     def __init__(self, size, ppg):
         self.size = self.width, self.height = size
-        self.grid = Grid(*size)
         self.ppg = ppg
+        self.grid = Grid(int(self.width / self.ppg), int(self.height / self.ppg))
         self.wall_list = None
 
     def to_pixels(self, grid_loc):
