@@ -79,8 +79,8 @@ class Loc:
 
 
 class Node:
-    def __init__(self, x, y, action=None, cost=0.0, parent=None):
-        self.loc = Loc(x, y)
+    def __init__(self, loc, action=None, cost=0.0, parent=None):
+        self.loc = loc
         self.action = action
         self.cost = cost
         self.parent = parent
@@ -129,6 +129,7 @@ class PriorityQueue:
 
 def dist(a, b):
     if type(a) is Node and type(b) is Node:
+        print(a)
         dx = abs(a.loc.x - b.loc.x)
         dy = abs(a.loc.y - b.loc.y)
     elif type(a) is Loc and type(b) is Loc:
@@ -167,7 +168,7 @@ def pathfind(grid, start, end, heuristic=euclidean_heuristic):
     path = []
     curr = current
     while curr.parent is not None:
-        path.insert(0, curr.action)
+        path.insert(0, curr.action, curr.loc)
         curr = curr.parent
 
     return path

@@ -9,26 +9,27 @@ from World import World
 
 class Game:
     def __init__(self):
-        self.mouse_down = False
         self._running = True
         self.screen = None
         self.size = self.width, self.height = 665, 437
         self.all_sprites = pygame.sprite.Group()
         self.player_step = 19
-        self.world = World((self.width, self.height), self.player_step)
         self.player = Player(Loc(33, 33))
+        self.world = World((self.width, self.height), self.player_step, self.player)
         self.background = None
         self.clock = pygame.time.Clock()
         self.FPS = 30
         self.playtime = 0
         self.visual_sensors = None
         self.last_grid = (0, 0)
+        self.mouse_down = False
+        self.key_1 = False
 
     def setup(self):
         pygame.init()
         self.screen = pygame.display.set_mode(self.size, pygame.HWACCEL | pygame.DOUBLEBUF)
         self.visual_sensors = VisualSensors(self.player)
-        pygame.display.set_caption("James and Ashvins Autistic AI")
+        pygame.display.set_caption("James and Ashvin's (autistic) 'AI'")
 
         self.all_sprites.add(self.player)
 
@@ -51,16 +52,20 @@ class Game:
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     self._running = False
+                if event.key == pygame.K_1:
+                    self.key_1 = True
                 self.handle_keys(event.key)
+            elif event.type == pygame.KEYUP:
+                if event.key == pygame.K_1:
+                    self.key_1 = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 self.mouse_down = True
                 print('gay')
             elif event.type == pygame.MOUSEBUTTONUP:
                 self.mouse_down = False
                 self.last_grid = (0, 0)
-        if self.mouse_down:
+        if self.mouse_down and self.key_1:
             self.last_grid = self.world.create_wall(self.last_grid)
-            print(self.last_grid)
 
     def handle_keys(self, keys):
         if Keys.keyright(keys):
