@@ -30,9 +30,7 @@ class World:
         if self.frame == self.move_frames:
             self.obj = self.frame = self.start_loc = self.end_loc = None
         if self.obj:
-            print(self.frame, self.start_loc, self.end_loc)
             obj_loc = lerp(self.frame, self.frames, self.start_loc, self.end_loc)
-            print(obj_loc)
             self.obj.loc = obj_loc
             self.frame += 1
 
@@ -57,7 +55,6 @@ class World:
         self.grid[grid_x][grid_y] = 'W'
 
     def move(self, obj, action):
-        print(action)
         if not self.obj:
             direction = World.directions[World.actions.index(action)]
             self.obj = obj
