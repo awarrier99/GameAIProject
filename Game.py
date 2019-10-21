@@ -13,7 +13,7 @@ class Game:
         self.size = self.width, self.height = 658, 420
         self.player_step = 7
         self.world = World((int(self.width / self.player_step), int(self.height / self.player_step)), self.player_step)
-        self.player = Player(Loc(33, 33), self.world)
+        self.player = Player(Loc(33, 33))
         self.background = None
         self.clock = pygame.time.Clock()
         self.FPS = 30

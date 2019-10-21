@@ -16,14 +16,13 @@ class Player(pygame.sprite.Sprite):
 
     # feet_offset = rifle_walk[0].get_height() / 3
 
-    def __init__(self, location, world):
+    def __init__(self, location):
         #  init
         pygame.sprite.Sprite.__init__(self)
         self.health = 100
         self.image = pygame.image.load('PlayerSprites/Images/rifle/move/survivor-move_rifle_0.png')
         self.image = pygame.transform.scale(self.image, (50, 33))
         self.rect = self.image.get_rect()
-        self.world = world
 
         self.loc = location
         self.rect.center = (self.loc.x, self.loc.y)
