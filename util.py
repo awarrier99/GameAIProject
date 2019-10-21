@@ -204,6 +204,8 @@ def pathfind(grid, start, end, heuristic=euclidean_heuristic):
             break
         current = nodes.pop()
 
+    if not current == end:
+        return []
     path = []
     curr = current
     while curr.parent is not None:

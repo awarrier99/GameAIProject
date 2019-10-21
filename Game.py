@@ -4,22 +4,25 @@ from Player import Player
 from util import Loc, Keys, Actions
 from VisualSensors import VisualSensors
 from World import World
+from argparse import ArgumentParser
 
 
 class Game:
-    def __init__(self):
+    def __init__(self, cfg):
         self._running = True
         self.screen = None
-        self.size = self.width, self.height = 665, 437
+        self.size = self.width, self.height = cfg['width'] or 665, cfg['height'] or 437
         self.all_sprites = pygame.sprite.Group()
-        self.player_step = 19
-        self.world = World((self.width, self.height), self.player_step)
+        self.ppg = cfg['ppg'] or 19
+        self.__ai_mode = cfg['ai']
+        self.world = World((self.width, self.height), self.ppg, cfg['move_frames'], self.__ai_mode)
         self.player = Player(self.world.to_pixels(Loc(2, 2)))
         self.world.player = self.player
         self.background = None
         self.clock = pygame.time.Clock()
-        self.FPS = 60
+        self.FPS = cfg['fps'] or 60
         self.playtime = 0
+        self._enable_visuals = not cfg['novisuals']
         self.visual_sensors = None
         self.last_grid = (0, 0)
         self.mouse_down = False
@@ -27,9 +30,12 @@ class Game:
         self.key_2 = False
 
     def setup(self):
+        if self.__ai_mode:
+            print('Running in AI mode. Move controls disabled')
         pygame.init()
         self.screen = pygame.display.set_mode(self.size, pygame.HWACCEL | pygame.DOUBLEBUF)
-        self.visual_sensors = VisualSensors(self.player)
+        if self._enable_visuals:
+            self.visual_sensors = VisualSensors(self.player)
         pygame.display.set_caption("James and Ashvin's (autistic) 'AI'")
 
         self.all_sprites.add(self.player)
@@ -43,7 +49,8 @@ class Game:
         self.screen.blit(self.background, (0, 0))
         self.world.draw(self.screen)
         self.all_sprites.draw(self.screen)
-        self.visual_sensors.draw(self.screen)
+        if self._enable_visuals:
+            self.visual_sensors.draw(self.screen)
         pygame.display.flip()
 
     def check_event_queue(self):
@@ -97,9 +104,11 @@ class Game:
             self.playtime += milliseconds / 1000.0
             pygame.display.set_caption("James and Ashvin's (autistic) 'AI'  FPS: " + str(round(self.clock.get_fps(), 1)))
             self.check_event_queue()
-            self.handle_keys(pygame.key.get_pressed())
+            if not self.__ai_mode:
+                self.handle_keys(pygame.key.get_pressed())
             self.all_sprites.update()
-            self.visual_sensors.update()
+            if self._enable_visuals:
+                self.visual_sensors.update()
             self.world.update()
             self.redraw()
 
@@ -116,5 +125,14 @@ class Game:
 
 
 if __name__ == "__main__":
-    game = Game()
+    parser = ArgumentParser()
+    parser.add_argument('-n', '--novisuals', action='store_true', help='whether to show visual sensors for debugging')
+    parser.add_argument('-w', '--width', type=int, help='width of the game screen')
+    parser.add_argument('-t', '--height', type=int, help='height of the game screen')
+    parser.add_argument('-p', '--ppg', type=int, help='pixels per grid position')
+    parser.add_argument('-f', '--fps', type=int, help='frames per second')
+    parser.add_argument('-m', '--move-frames', type=int, help='number of frames to move for')
+    parser.add_argument('-a', '--ai', action='store_true', help='whether to run in AI mode')
+    config = vars(parser.parse_args())
+    game = Game(config)
     game.run()

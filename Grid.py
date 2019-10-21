@@ -22,7 +22,10 @@ class Grid:
                 n = self[loc.x][loc.y]
                 if not n.is_wall() and not self.is_blocked(node, dr):
                     n.action = actions[idx]
-                    n.cost = 1
+                    if dr[0] and dr[1]:
+                        n.cost = 2 ** 0.5
+                    else:
+                        n.cost = 1
                     node_list.append(n)
 
         return node_list
@@ -45,7 +48,7 @@ class Grid:
         return True
 
     def __getitem__(self, idx):
-        return GridCol(idx, self._grid)
+        return GridCol(idx, self)
 
     def __str__(self):
         string = ''
@@ -62,13 +65,16 @@ class Grid:
 class GridCol:
     def __init__(self, col_num, grid):
         self._col_num = col_num
-        self._grid = grid
+        self.grid = grid
 
     def __getitem__(self, idx):
-        if self._grid[self._col_num][idx] == 'W':
+        if not self.grid.is_valid(Loc(self._col_num, idx)):
+            return Wall(Loc(-1, -1))
+
+        if self.grid._grid[self._col_num][idx] == 'W':
             return Wall(Loc(self._col_num, idx))
 
         return Node(Loc(self._col_num, idx))
 
     def __setitem__(self, idx, value):
-        self._grid[self._col_num][idx] = value
+        self.grid._grid[self._col_num][idx] = value

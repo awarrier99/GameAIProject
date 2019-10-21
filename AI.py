@@ -3,10 +3,9 @@ from util import pathfind, euclidean_heuristic
 
 
 class AI:
-    def __init__(self, grid, queue, cb, ecb, heuristic=euclidean_heuristic):
+    def __init__(self, grid, cb, ecb, heuristic=euclidean_heuristic):
         self._pool = Pool(1)
         self._resolved = True
-        self.__queue = queue
         self.grid = grid
         self.heuristic = heuristic
         self.wcb = cb
