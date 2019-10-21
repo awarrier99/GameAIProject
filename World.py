@@ -29,7 +29,7 @@ class World:
 
     def update(self):
         if self.count > 20:
-            self.path = pathfind(self.grid, Node(self.to_grids(self.player.loc)), Node(self.goal_loc))
+            # self.path = pathfind(self.grid, Node(self.to_grids(self.player.loc)), Node(self.goal_loc))
             self.count = 0
         self.count += 1
 
@@ -47,7 +47,7 @@ class World:
             direction = directions[actions.index(action)]
             loc = self.to_grids(obj.loc)
             end_loc = Loc(loc.x + direction[0], loc.y + direction[1])
-            if not self.grid[end_loc.x][end_loc.y].is_wall():
+            if not self.grid[end_loc.x][end_loc.y].is_wall() and loc.x < self.grid.width and loc.y < self.grid.height:
                 self.obj = obj
                 self.start_loc = obj.loc
                 self.end_loc = self.to_pixels(end_loc)
