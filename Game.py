@@ -37,7 +37,7 @@ class Game:
         pygame.init()
         self.screen = pygame.display.set_mode(self.size, pygame.HWACCEL | pygame.DOUBLEBUF)
         if self._enable_visuals:
-            self.visual_sensors = VisualSensors(self.player)
+            self.visual_sensors = VisualSensors(self.player, self.world.to_pixels, self.world.ppg)
         pygame.display.set_caption("James and Ashvin's (autistic) 'AI'")
 
         if self._enable_dirty_rects:
@@ -59,7 +59,7 @@ class Game:
         wall_rects, old_wall_rects = self.world.draw(self.screen, self.background)
         dirty_rects = self.all_sprites.draw(self.screen)
         if self._enable_visuals:
-            self.visual_sensors.draw(self.screen)
+            self.visual_sensors.draw(self.screen, self.world.path, self.world.goal_loc)
         if self._enable_dirty_rects:
             pygame.display.update(dirty_rects + wall_rects + old_wall_rects)
         else:

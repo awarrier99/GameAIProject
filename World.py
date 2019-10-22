@@ -32,14 +32,13 @@ class World:
         self.old_wall_rects = []
         self.wall_thickness = 6
         self.ai = AI(self.grid, self.ai_callback, World.ai_error_callback)
-        self.ray1 = Ray()
-        self.ray2 = Ray()
-        self.ray3 = Ray()
-        self.ray4 = Ray()
-        self.ray5 = Ray()
+        self.rays = [Ray() for _ in range(4)]
 
         self.collider1 = Collider(self.to_pixels(Loc(5, 5)))
-        self.colliders = [self.collider1]
+        self.collider2 = Collider(self.to_pixels(Loc(8, 5)))
+        self.collider3 = Collider(self.to_pixels(Loc(4, 6)))
+        self.collider4 = Collider(self.to_pixels(Loc(3, 5)))
+        self.colliders = [self.collider1, self.collider2, self.collider3, self.collider4]
 
     def ai_callback(self, result):
         self.path = result
@@ -61,15 +60,12 @@ class World:
         return Loc(int(pixel_loc.x / self.ppg), int(pixel_loc.y / self.ppg))
 
     def update(self):
-        self.ray1.get_collisions(self.player, 1000, self.colliders)
-        self.ray2.get_collisions(self.player, 1000, self.colliders)
-        self.ray3.get_collisions(self.player, 1000, self.colliders)
-        self.ray4.get_collisions(self.player, 1000, self.colliders)
-        self.ray5.get_collisions(self.player, 1000, self.colliders)
+        for ray in self.rays:
+            ray.get_collisions(self.player, 1000, self.colliders)
 
         if self.goal_loc and (not self._ai_moving):
             pass
-            # self.ai.pathfind(Node(self.to_grids(self.player.loc)), Node(self.goal_loc))
+            self.ai.pathfind(Node(self.to_grids(self.player.loc)), Node(self.goal_loc))
 
         if self.frame == self.frames[-1] + 1:
             self.obj.dirty = 0
@@ -167,15 +163,6 @@ class World:
         if self.new_wall_rects:
             print('old', self.old_wall_rects)
             print('new', self.new_wall_rects)
-
-        for loc in self.path:
-            path_x = loc[1].x
-            path_y = loc[1].y
-            path_p = self.to_pixels(Loc(path_x, path_y))
-            if loc[1] == self.goal_loc:
-                pygame.draw.rect(screen, red, (path_p.x - self.ppg / 2, path_p.y - self.ppg / 2, self.ppg, self.ppg))
-            else:
-                pygame.draw.rect(screen, green, (path_p.x - self.ppg / 2, path_p.y - self.ppg / 2, self.ppg, self.ppg))
 
         if self._enable_dirty_rects:
             for rect in self.new_wall_rects:
