@@ -227,12 +227,13 @@ def in_sight(player, direction, range_, obstacles):
     ret = []
     line_of_sight = get_line(player.loc, direction, range_, 5)
     zone = player.rect.inflate(range_, range_)
-    collidables = [rectangle.rect for rectangle in obstacles]  # to support indexing
+    collidable_sprites = [sprite for sprite in obstacles]
+    collidables = [sprite.rect for sprite in obstacles]  # to support indexing
     collisions = zone.collidelistall(collidables)
     for x in range(1, len(line_of_sight)):
         for ind in collisions:
             if collidables[ind].collidepoint(line_of_sight[x]):
-                ret.append(collidables[ind])
+                ret.append((collidables[ind], collidable_sprites[ind]))
                 return ret
     return ret
 
