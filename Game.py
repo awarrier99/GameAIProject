@@ -1,9 +1,11 @@
 import pygame
+import util
 
 from Player import Player
-from util import Loc, Keys, Actions
+from util import Loc, Keys, Actions, to_grids, to_pixels
 from VisualSensors import VisualSensors
 from World import World
+from Workers import Workers
 
 from argparse import ArgumentParser
 
@@ -13,11 +15,10 @@ class Game:
         self._running = True
         self.screen = None
         self.size = self.width, self.height = cfg['width'] or 1085, cfg['height'] or 735
-        self.ppg = cfg['ppg'] or 35
         self.__ai_mode = cfg['ai']
         self._enable_dirty_rects = cfg['dirty_rects']
-        self.world = World((self.width, self.height), self.ppg, cfg['move_frames'], self.__ai_mode, self._enable_dirty_rects)
-        self.player = Player(self.world.to_pixels(Loc(2, 2)))
+        self.world = World((self.width, self.height), cfg['move_frames'], self.__ai_mode, self._enable_dirty_rects)
+        self.player = Player(to_pixels(Loc(2, 2)))
         self.all_sprites = None
         self.world.player = self.player
         self.background = None
@@ -37,7 +38,7 @@ class Game:
         pygame.init()
         self.screen = pygame.display.set_mode(self.size, pygame.HWACCEL | pygame.DOUBLEBUF)
         if self._enable_visuals:
-            self.visual_sensors = VisualSensors(self.player, self.world.to_pixels, self.world.ppg, *self.size)
+            self.visual_sensors = VisualSensors(self.player, *self.size)
         pygame.display.set_caption("James and Ashvin's (autistic) 'AI'")
 
         if self._enable_dirty_rects:
@@ -90,7 +91,7 @@ class Game:
             self.last_grid = self.world.create_wall(self.last_grid)
         if self.mouse_down and self.key_2:
             x, y = pygame.mouse.get_pos()
-            self.world.goal_loc = self.world.to_grids(Loc(x, y))
+            self.world.goal_loc = to_grids(Loc(x, y))
 
     def handle_keys(self, keys):
         if Keys.upright(keys):
@@ -126,8 +127,8 @@ class Game:
 
     def cleanup(self):
         self.background = self.screen = self.all_sprites = None
-        self.world.ai._pool.terminate()
-        self.world.ai._pool.join()
+        Workers._pool.terminate()
+        Workers._pool.join()
         pygame.quit()
 
     def run(self):
@@ -141,11 +142,12 @@ if __name__ == "__main__":
     parser.add_argument('-n', '--novisuals', action='store_true', help='whether to show visual sensors for debugging')
     parser.add_argument('-w', '--width', type=int, help='width of the game screen')
     parser.add_argument('-t', '--height', type=int, help='height of the game screen')
-    parser.add_argument('-p', '--ppg', type=int, help='pixels per grid position')
+    parser.add_argument('-p', '--util.ppg', type=int, help='pixels per grid position')
     parser.add_argument('-f', '--fps', type=int, help='frames per second')
     parser.add_argument('-m', '--move-frames', type=int, help='number of frames to move for')
     parser.add_argument('-a', '--ai', action='store_true', help='whether to run in AI mode')
     parser.add_argument('-d', '--dirty-rects', action='store_true', help='whether to use dirty rect rendering')
     config = vars(parser.parse_args())
+    util.ppg = config['util.ppg'] or 35
     game = Game(config)
     game.run()

@@ -5,6 +5,7 @@ import math
 
 directions = [(-1, -1), (0, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (0, 1), (1, 1)]
 actions = ['Up Left', 'Up', 'Up Right', 'Left', 'Right', 'Down Left', 'Down', 'Down Right']
+ppg = 35
 
 
 class Actions:
@@ -179,6 +180,14 @@ def dist(a, b):
     return ((dx ** 2) + (dy ** 2)) ** 0.5
 
 
+def to_pixels(grid_loc):
+    return Loc((grid_loc.x * ppg) + int(ppg / 2) + 1, (grid_loc.y * ppg) + int(ppg / 2) + 1)
+
+
+def to_grids(pixel_loc):
+    return Loc(int(pixel_loc.x / ppg), int(pixel_loc.y / ppg))
+
+
 def euclidean_heuristic(node, goal):
     return dist(node, goal)
 
@@ -223,17 +232,17 @@ def lerp(t, times, start, end):
     return Loc(dt * (end.x - start.x) + start.x, dt * (end.y - start.y) + start.y)
 
 
-def in_sight(player, direction, range_, obstacles):
+def in_sight(player_loc, zone, direction, range_, collidables, walls):
     ret = []
-    line_of_sight = get_line(player.loc, direction, range_, 5)
-    zone = player.rect.inflate(range_, range_)
-    collidable_sprites = [sprite for sprite in obstacles]
-    collidables = [sprite.rect for sprite in obstacles]  # to support indexing
+    line_of_sight = get_line(player_loc, direction, range_, 5)
     collisions = zone.collidelistall(collidables)
     for x in range(1, len(line_of_sight)):
+        loc = to_grids(Loc(*line_of_sight[x]))
+        if (loc.x, loc.y) in walls:
+            break
         for ind in collisions:
             if collidables[ind].collidepoint(line_of_sight[x]):
-                ret.append((collidables[ind], collidable_sprites[ind]))
+                ret.append((collidables[ind], ind))
                 return ret
     return ret
 
