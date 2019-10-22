@@ -32,7 +32,7 @@ class World:
         self.old_wall_rects = []
         self.wall_thickness = 6
         self.ai = AI(self.grid, self.ai_callback, World.ai_error_callback)
-        self.rays = [Ray() for _ in range(4)]
+        self.rays = [Ray() for _ in range(1)]
 
         self.collider1 = Collider(self.to_pixels(Loc(5, 5)))
         self.collider2 = Collider(self.to_pixels(Loc(8, 5)))
@@ -61,8 +61,7 @@ class World:
 
     def update(self):
         for ray in self.rays:
-            ray.get_collisions(self.player, 1000, self.colliders)
-
+            collision = ray.get_collision(self.player, 1000, self.colliders)
 
         if self.goal_loc and (not self._ai_moving):
             self.ai.pathfind(Node(self.to_grids(self.player.loc)), Node(self.goal_loc))
