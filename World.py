@@ -14,7 +14,7 @@ class World:
         self.path = []
         self.__ai_mode = ai_mode
         self._ai_moving = False
-        self.goal_loc = None if self.__ai_mode else Loc(30, 20)
+        self.goal_loc = None if self.__ai_mode else Loc(10, 10)
         self.move_frames = move_frames or 12
         self.obj = None
         self.frame = 0
@@ -73,7 +73,7 @@ class World:
                 self.frames = range(self.move_frames)
             loc = self.to_grids(obj.loc)
             end_loc = Loc(loc.x + direction[0], loc.y + direction[1])
-            if not self.grid[end_loc.x][end_loc.y].is_wall():
+            if not (self.grid[end_loc.x][end_loc.y].is_wall() or self.grid.is_blocked(Node(loc), direction)):
                 self.obj = obj
                 self.start_loc = obj.loc
                 self.end_loc = self.to_pixels(end_loc)
