@@ -67,7 +67,7 @@ class World:
             collision = ray.get_collision(self.player, 1000, self.colliders, self.grid.walls)
 
         if self.goal_loc and (not self._ai_moving):
-            self.ai.pathfind(Node(self.to_grids(self.player.loc)), Node(self.goal_loc))
+            self.ai.pathfind(Node(to_grids(self.player.loc)), Node(self.goal_loc))
 
         if self.frame == self.frames[-1] + 1:
             self.obj.dirty = 0
