@@ -4,6 +4,7 @@ import math
 from pygame.math import Vector2
 from Ray import Ray
 
+
 class Player(pygame.sprite.Sprite):
 
     # feet_walk = [pygame.image.load('PlayerSprites/Images/feet/walk/survivor-walk_0.png'), pygame.image.load('PlayerSprites/Images/feet/walk/survivor-walk_1.png'),pygame.image.load('PlayerSprites/Images/feet/walk/survivor-walk_2.png'),pygame.image.load('PlayerSprites/Images/feet/walk/survivor-walk_3.png'),pygame.image.load('PlayerSprites/Images/feet/walk/survivor-walk_4.png'),pygame.image.load('PlayerSprites/Images/feet/walk/survivor-walk_5.png'),pygame.image.load('PlayerSprites/Images/feet/walk/survivor-walk_6.png'),pygame.image.load('PlayerSprites/Images/feet/walk/survivor-walk_7.png'),pygame.image.load('PlayerSprites/Images/feet/walk/survivor-walk_8.png'),pygame.image.load('PlayerSprites/Images/feet/walk/survivor-walk_9.png'),pygame.image.load('PlayerSprites/Images/feet/walk/survivor-walk_10.png'),pygame.image.load('PlayerSprites/Images/feet/walk/survivor-walk_11.png'),pygame.image.load('PlayerSprites/Images/feet/walk/survivor-walk_12.png'),pygame.image.load('PlayerSprites/Images/feet/walk/survivor-walk_13.png'),pygame.image.load('PlayerSprites/Images/feet/walk/survivor-walk_14.png'),pygame.image.load('PlayerSprites/Images/feet/walk/survivor-walk_15.png'),pygame.image.load('PlayerSprites/Images/feet/walk/survivor-walk_16.png'),pygame.image.load('PlayerSprites/Images/feet/walk/survivor-walk_17.png'),pygame.image.load('PlayerSprites/Images/feet/walk/survivor-walk_18.png'),pygame.image.load('PlayerSprites/Images/feet/walk/survivor-walk_19.png')]
@@ -25,11 +26,12 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.loc = location
         self.rect.center = (self.loc.x, self.loc.y)
-
+        self.dirty = 0
         self.orig_image = self.image
         self.pos = Vector2(self.loc.x, self.loc.y)  # The original center position/pivot point.
         self.offset = Vector2(9.346, -2.72)  # We shift the sprite 50 px to the right.
         self.direction = 0  # degrees: 0º is facing right
+        self._last_dir = 0
         self.fov = 65  # degrees
 
     def shoot(self, direction):
@@ -56,5 +58,7 @@ class Player(pygame.sprite.Sprite):
         self.direction = math.degrees(math.atan(dy/dx))
         if dx < 0:
             self.direction += 180
-        self.rotate()
+        if not self.direction == self._last_dir:
+            self.dirty = 1
+            self.rotate()
 

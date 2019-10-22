@@ -10,14 +10,14 @@ class AI:
         self.heuristic = heuristic
         self.wcb = cb
         self.ecb = ecb
-        self._last_loc = None
+        self._last_locs = (None, None)
 
     def cb(self, result):
         self._resolved = True
         self.wcb(result)
 
     def pathfind(self, start, end):
-        if self._resolved and (not self._last_loc == start):
+        if self._resolved and (not self._last_locs == (start, end)):
             self._resolved = False
-            self._last_loc = start
+            self._last_locs = (start, end)
             self._pool.apply_async(pathfind, (self.grid, start, end, self.heuristic), callback=self.cb, error_callback=self.ecb)
