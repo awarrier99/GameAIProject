@@ -233,7 +233,6 @@ def lerp(t, times, start, end):
 
 
 def in_sight(player_loc, zone, direction, range_, collidables, walls):
-
     line_of_sight = get_line(player_loc, direction, range_, 5)
     collisions = zone.collidelistall(collidables)
     for x in range(1, len(line_of_sight)):
@@ -244,7 +243,6 @@ def in_sight(player_loc, zone, direction, range_, collidables, walls):
             if collidables[ind].collidepoint(line_of_sight[x]):
                 return collidables[ind], ind
     return None
-
 
 
 def get_line(start, direction, range_, step):

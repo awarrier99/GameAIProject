@@ -50,7 +50,8 @@ class World:
 
     def ray_callback(self, result):
         pass
-        # print(result)
+        # if result:
+        #     print(self.colliders[result[1]])
 
     @staticmethod
     def task_error_callback(err):
