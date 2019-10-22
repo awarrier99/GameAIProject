@@ -231,7 +231,8 @@ def in_sight(player, direction, range_, obstacles):
     collisions = zone.collidelistall(collidables)
     for x in range(1, len(line_of_sight), 10):
         for ind in collisions:
-            if collidables[ind].collidepoint(line_of_sight[x]):
+            collidable = collidables[ind]
+            if collidable.collidepoint(line_of_sight[x]) and collidable not in ret:
                 ret.append(collidables[ind])
     return ret
 
