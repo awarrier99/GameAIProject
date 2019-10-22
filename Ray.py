@@ -1,22 +1,26 @@
 from util import in_sight
 import math
 import pygame
+from Workers import Workers
 
 
 class Ray:
 
-    def __init__(self, is_sweeping):
+    def __init__(self, is_sweeping, cb, ecb):
         self.is_sweeping = is_sweeping
         self.angle_offset = 0
         self.offset_inc = True
         self.sweep_speed = 1
+        self._resolved = True
+        self.cb = cb
+        self.ecb = ecb
 
-    def get_collision(self, player, range_, sprites):
-        collision = in_sight(player, player.direction + self.angle_offset, range_, sprites)
-        if collision:
-            return collision[1]
-        else:
-            return None
+    def get_collision(self, player, range_, sprites, walls):
+        if self._resolved:
+            zone = player.rect.inflate(range_, range_)
+            collidables = [sprite.rect for sprite in sprites]
+            args = (player.loc, zone, player.direction, range_, collidables, walls)
+            Workers.delegate(in_sight, args, callback=self.cb, error_callback=self.ecb)
 
     def draw(self, loc, dir, screen):
         yellow = 255, 255, 102

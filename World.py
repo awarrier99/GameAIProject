@@ -2,17 +2,16 @@ import pygame
 
 from Grid import Grid
 from AI import AI
-from util import Loc, Node, lerp, directions, actions, Queue
+from util import Loc, Node, lerp, directions, actions, Queue, ppg, to_pixels, to_grids
 from traceback import print_exception
 from Ray import Ray
 from Collider import Collider
 
 
 class World:
-    def __init__(self, size, ppg, move_frames, ai_mode, enable_dirty_rects):
+    def __init__(self, size, move_frames, ai_mode, enable_dirty_rects):
         self.size = self.width, self.height = size
-        self.ppg = ppg
-        self.grid = Grid(int(self.width / self.ppg), int(self.height / self.ppg))
+        self.grid = Grid(int(self.width / ppg), int(self.height / ppg))
         self.path = []
         self.__ai_mode = ai_mode
         self._ai_moving = False
@@ -31,13 +30,14 @@ class World:
         self.new_wall_rects = []
         self.old_wall_rects = []
         self.wall_thickness = 6
-        self.ai = AI(self.grid, self.ai_callback, World.ai_error_callback)
-        self.rays = [Ray(True) for _ in range(1)]
 
-        self.collider1 = Collider(self.to_pixels(Loc(5, 5)))
-        self.collider2 = Collider(self.to_pixels(Loc(8, 5)))
-        self.collider3 = Collider(self.to_pixels(Loc(4, 6)))
-        self.collider4 = Collider(self.to_pixels(Loc(3, 5)))
+        self.ai = AI(self.grid, self.ai_callback, World.task_error_callback)
+        self.rays = [Ray(True, self.ray_callback, self.task_error_callback) for _ in range(4)]
+
+        self.collider1 = Collider(to_pixels(Loc(5, 5)))
+        self.collider2 = Collider(to_pixels(Loc(8, 5)))
+        self.collider3 = Collider(to_pixels(Loc(4, 6)))
+        self.collider4 = Collider(to_pixels(Loc(3, 5)))
         self.colliders = [self.collider1, self.collider2, self.collider3, self.collider4]
 
     def ai_callback(self, result):
@@ -48,25 +48,25 @@ class World:
             for move in result[1:]:
                 self.moves.push((self.player, move[0]))
 
+    def ray_callback(self, result):
+        pass
+        # print(result)
+
     @staticmethod
-    def ai_error_callback(err):
-        print('AI Task failed')
+    def task_error_callback(err):
+        print('Task failed')
         print_exception(type(err), err, None)
 
-    def to_pixels(self, grid_loc):
-        return Loc((grid_loc.x * self.ppg) + int(self.ppg / 2) + 1, (grid_loc.y * self.ppg) + int(self.ppg / 2) + 1)
-
-    def to_grids(self, pixel_loc):
-        return Loc(int(pixel_loc.x / self.ppg), int(pixel_loc.y / self.ppg))
+    def get_grid(self, loc):
+        return self.grid[loc.x][loc.y]
 
     def update(self):
         for ray in self.rays:
             ray.update(self.player)
-            collision = ray.get_collision(self.player, 1000, self.colliders)
+            collision = ray.get_collision(self.player, 1000, self.colliders, self.grid.walls)
 
         if self.goal_loc and (not self._ai_moving):
-            pass
-            # self.ai.pathfind(Node(self.to_grids(self.player.loc)), Node(self.goal_loc))
+            self.ai.pathfind(Node(self.to_grids(self.player.loc)), Node(self.goal_loc))
 
         if self.frame == self.frames[-1] + 1:
             self.obj.dirty = 0
@@ -91,20 +91,20 @@ class World:
                 self.frames = range(int(self.move_frames * 1.6))
             else:
                 self.frames = range(self.move_frames)
-            loc = self.to_grids(obj.loc)
+            loc = to_grids(obj.loc)
             end_loc = Loc(loc.x + direction[0], loc.y + direction[1])
             if not self.grid[end_loc.x][end_loc.y].is_wall():
                 obj.dirty = 1
                 self.obj = obj
                 self.start_loc = obj.loc
-                self.end_loc = self.to_pixels(end_loc)
+                self.end_loc = to_pixels(end_loc)
         elif self.frame == self.move_frames - 2:
             self.moves.push((obj, action))
 
     def create_wall(self, last_grid):
         x, y = pygame.mouse.get_pos()
-        grid_x = int(x / self.ppg)
-        grid_y = int(y / self.ppg)
+        grid_x = int(x / ppg)
+        grid_y = int(y / ppg)
         if not last_grid == (grid_x, grid_y):
             if (grid_x, grid_y) not in self.grid.walls:
                 self.grid[grid_x][grid_y] = 'W'
@@ -118,19 +118,19 @@ class World:
         wall_rects = []
         for wall_center in walls:
             wall_x, wall_y = wall_center
-            wall_p = self.to_pixels(Loc(wall_x, wall_y))
+            wall_p = to_pixels(Loc(wall_x, wall_y))
             if self.grid[wall_x][wall_y - 1].is_wall():  # if there is a wall above this wall
-                wall_rects.append(pygame.Rect(wall_p.x - self.wall_thickness / 2, wall_p.y - self.ppg / 2,
-                                              self.wall_thickness, self.ppg / 2 + 1))
+                wall_rects.append(pygame.Rect(wall_p.x - self.wall_thickness / 2, wall_p.y - ppg / 2,
+                                              self.wall_thickness, ppg / 2 + 1))
             if self.grid[wall_x][wall_y + 1].is_wall():  # if there is a wall below this wall
                 wall_rects.append(pygame.Rect(wall_p.x - self.wall_thickness / 2, wall_p.y +
-                                              self.wall_thickness / 2, self.wall_thickness, self.ppg / 2 + 1))
+                                              self.wall_thickness / 2, self.wall_thickness, ppg / 2 + 1))
             if self.grid[wall_x - 1][wall_y].is_wall():  # if there is to the left of this wall
-                wall_rects.append(pygame.Rect(wall_p.x - self.ppg / 2, wall_p.y - self.wall_thickness / 2,
-                                              self.ppg / 2 + 1, self.wall_thickness))
+                wall_rects.append(pygame.Rect(wall_p.x - ppg / 2, wall_p.y - self.wall_thickness / 2,
+                                              ppg / 2 + 1, self.wall_thickness))
             if self.grid[wall_x + 1][wall_y].is_wall():  # if there is to the left of this wall
                 wall_rects.append(pygame.Rect(wall_p.x + self.wall_thickness / 2, wall_p.y -
-                                              self.wall_thickness / 2, self.ppg / 2 + 1, self.wall_thickness))
+                                              self.wall_thickness / 2, ppg / 2 + 1, self.wall_thickness))
 
             wall_rects.append(pygame.Rect(wall_p.x - self.wall_thickness / 2, wall_p.y - self.wall_thickness / 2,
                                           self.wall_thickness, self.wall_thickness))

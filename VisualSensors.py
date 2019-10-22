@@ -1,15 +1,14 @@
 import pygame
 import math
-from pygame import gfxdraw
-from util import Loc
+import util
+
+from util import Loc, to_pixels
 
 class VisualSensors:
 
-    def __init__(self, player, to_pixels, ppg, width, height):  # eventually take list of players
+    def __init__(self, player, width, height):  # eventually take list of players
         self.player = player
         self.field_of_view = player.fov
-        self.ppg = ppg
-        self.to_pixels = to_pixels
         self.width = width
         self.height = height
         self.ray_cast_angle = self.player.direction
@@ -39,10 +38,10 @@ class VisualSensors:
         while i <= self.width:
             pygame.draw.line(screen, black, (i, 0), (i, self.height))
             pygame.draw.line(screen, black, (0, i), (self.width, i))
-            if skip == self.ppg - 1:
+            if skip == util.ppg - 1:
                 skip = 1
             else:
-                skip = self.ppg - 1
+                skip = util.ppg - 1
             i += skip
 
         l1_p1 = self.player.loc.x + self.player.offset.x / 2, self.player.loc.y + self.player.offset.y / 2
@@ -64,9 +63,9 @@ class VisualSensors:
         for loc in path:
             path_x = loc[1].x
             path_y = loc[1].y
-            path_p = self.to_pixels(Loc(path_x, path_y))
+            path_p = to_pixels(Loc(path_x, path_y))
             if loc[1] == goal:
-                pygame.draw.rect(screen, red, (path_p.x - self.ppg / 2, path_p.y - self.ppg / 2, self.ppg, self.ppg))
+                pygame.draw.rect(screen, red, (path_p.x - util.ppg / 2, path_p.y - util.ppg / 2, util.ppg, util.ppg))
             else:
-                pygame.draw.rect(screen, green, (path_p.x - self.ppg / 2, path_p.y - self.ppg / 2, self.ppg, self.ppg))
+                pygame.draw.rect(screen, green, (path_p.x - util.ppg / 2, path_p.y - util.ppg / 2, util.ppg, util.ppg))
 
