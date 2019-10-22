@@ -13,11 +13,12 @@ class Game:
         self._running = True
         self.screen = None
         self.size = self.width, self.height = cfg['width'] or 1085, cfg['height'] or 735
-        self.all_sprites = pygame.sprite.Group()
         self.ppg = cfg['ppg'] or 35
         self.__ai_mode = cfg['ai']
-        self.world = World((self.width, self.height), self.ppg, cfg['move_frames'], self.__ai_mode)
+        self._enable_dirty_rects = cfg['dirty_rects']
+        self.world = World((self.width, self.height), self.ppg, cfg['move_frames'], self.__ai_mode, self._enable_dirty_rects)
         self.player = Player(self.world.to_pixels(Loc(2, 2)))
+        self.all_sprites = None
         self.world.player = self.player
         self.background = None
         self.clock = pygame.time.Clock()
@@ -39,21 +40,30 @@ class Game:
             self.visual_sensors = VisualSensors(self.player)
         pygame.display.set_caption("James and Ashvin's (autistic) 'AI'")
 
-        self.all_sprites.add(self.player)
-        self.all_sprites.add(*self.world.colliders)
+        if self._enable_dirty_rects:
+            self.all_sprites = pygame.sprite.LayeredDirty(self.player)
+        else:
+            self.all_sprites = pygame.sprite.Group()
+            self.all_sprites.add(self.player)
+            self.all_sprites.add(*self.world.colliders)
 
         self.background = pygame.Surface(self.screen.get_size())
         self.background.fill((255, 155, 155))
         self.background = self.background.convert()
         self.screen.blit(self.background, (0, 0))
+        self.all_sprites.clear(self.screen, self.background)
 
     def redraw(self):
-        self.screen.blit(self.background, (0, 0))
-        self.world.draw(self.screen)
-        self.all_sprites.draw(self.screen)
+        if not self._enable_dirty_rects:
+            self.screen.blit(self.background, (0, 0))
+        wall_rects, old_wall_rects = self.world.draw(self.screen, self.background)
+        dirty_rects = self.all_sprites.draw(self.screen)
         if self._enable_visuals:
             self.visual_sensors.draw(self.screen)
-        pygame.display.flip()
+        if self._enable_dirty_rects:
+            pygame.display.update(dirty_rects + wall_rects + old_wall_rects)
+        else:
+            pygame.display.flip()
 
     def check_event_queue(self):
         for event in pygame.event.get():
@@ -135,6 +145,7 @@ if __name__ == "__main__":
     parser.add_argument('-f', '--fps', type=int, help='frames per second')
     parser.add_argument('-m', '--move-frames', type=int, help='number of frames to move for')
     parser.add_argument('-a', '--ai', action='store_true', help='whether to run in AI mode')
+    parser.add_argument('-d', '--dirty-rects', action='store_true', help='whether to use dirty rect rendering')
     config = vars(parser.parse_args())
     game = Game(config)
     game.run()

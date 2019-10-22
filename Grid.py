@@ -6,6 +6,7 @@ class Grid:
         self.size = self.width, self.height = x, y
         self._grid = [['N' for _ in range(self.height)] for _ in range(self.width)]
         self.walls = walls
+        self._last_walls = walls.copy()
         for wall in self.walls:
             self._grid[wall.x][wall.y] = 'W'
         self.__first = None
