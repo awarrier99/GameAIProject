@@ -241,8 +241,7 @@ def in_sight(player_loc, zone, direction, range_, collidables, walls):
             break
         for ind in collisions:
             if collidables[ind].collidepoint(line_of_sight[x]):
-                ret = (collidables[ind], ind)
-                return ret
+                return collidables[ind], ind
     return None
 
 
