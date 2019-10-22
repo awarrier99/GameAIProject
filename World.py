@@ -63,8 +63,8 @@ class World:
         for ray in self.rays:
             ray.get_collisions(self.player, 1000, self.colliders)
 
+
         if self.goal_loc and (not self._ai_moving):
-            pass
             self.ai.pathfind(Node(self.to_grids(self.player.loc)), Node(self.goal_loc))
 
         if self.frame == self.frames[-1] + 1:
