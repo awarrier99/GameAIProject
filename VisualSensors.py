@@ -5,11 +5,13 @@ from util import Loc
 
 class VisualSensors:
 
-    def __init__(self, player, to_pixels, ppg):  # eventually take list of players
+    def __init__(self, player, to_pixels, ppg, width, height):  # eventually take list of players
         self.player = player
         self.field_of_view = player.fov
         self.ppg = ppg
         self.to_pixels = to_pixels
+        self.width = width
+        self.height = height
         self.ray_cast_angle = self.player.direction
         self.ray_cast_increasing = True
 
@@ -27,9 +29,21 @@ class VisualSensors:
         # self.ray_cast_angle -= 5
 
     def draw(self, screen, path, goal):
+        black = 0, 0, 0
         green = 0, 255, 0
         yellow = 255, 255, 102
-        red = 255, 0 ,0
+        red = 255, 0, 0
+
+        i = 0
+        skip = 0
+        while i <= self.width:
+            pygame.draw.line(screen, black, (i, 0), (i, self.height))
+            pygame.draw.line(screen, black, (0, i), (self.width, i))
+            if skip == self.ppg - 1:
+                skip = 1
+            else:
+                skip = self.ppg - 1
+            i += skip
 
         l1_p1 = self.player.loc.x + self.player.offset.x / 2, self.player.loc.y + self.player.offset.y / 2
         x1, y1 = l1_p1
