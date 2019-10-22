@@ -249,7 +249,11 @@ def in_sight(loc, fov, direction, collidables, walls):
                 break
 
     for collidable, obj_direction in in_fov:
-        collision_line = create_line(loc, Loc(*collidable.center), 1)
+        col_loc = Loc(*collidable.center)
+        if loc == col_loc:
+            visible.append((collidable, create_line(loc, loc, 1)))
+            continue
+        collision_line = create_line(loc, col_loc, 1)
         blocked = False
         for x in range(1, len(collision_line)):
             grid_loc = to_grids(Loc(*collision_line[x]))
@@ -277,6 +281,8 @@ def get_direction(start, end):
 
 def create_line(start, end, step):
     points = []
+    if start == end:
+        return [(start.x, start.y)]
     if end.x < start.x:
         t = end
         end = start
