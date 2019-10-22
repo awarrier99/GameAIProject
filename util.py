@@ -231,8 +231,7 @@ def in_sight(player, direction, range_, obstacles):
     collisions = zone.collidelistall(collidables)
     for x in range(1, len(line_of_sight)):
         for ind in collisions:
-            collidable = collidables[ind]
-            if collidable.collidepoint(line_of_sight[x]) and collidable not in ret:
+            if collidables[ind].collidepoint(line_of_sight[x]):
                 ret.append(collidables[ind])
                 return ret
     return ret
@@ -266,7 +265,8 @@ def get_line(start, direction, range_, step):
 
     # Calculate error
     error = int(dx / 2.0)
-    ystep = 1 if y1 < y2 else -1
+    ystep = 5 if y1 < y2 else -1
+    step = 5
 
     # Iterate over bounding box generating points between start and end
     y = y1
