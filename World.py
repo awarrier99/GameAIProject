@@ -32,8 +32,13 @@ class World:
         self.old_wall_rects = []
         self.wall_thickness = 6
         self.ai = AI(self.grid, self.ai_callback, World.ai_error_callback)
-        self.ray = Ray()
-        self.collider1 = Collider(Loc(50, 50))
+        self.ray1 = Ray()
+        self.ray2 = Ray()
+        self.ray3 = Ray()
+        self.ray4 = Ray()
+        self.ray5 = Ray()
+
+        self.collider1 = Collider(self.to_pixels(Loc(5, 5)))
         self.colliders = [self.collider1]
 
     def ai_callback(self, result):
@@ -56,7 +61,12 @@ class World:
         return Loc(int(pixel_loc.x / self.ppg), int(pixel_loc.y / self.ppg))
 
     def update(self):
-        print(self.ray.get_collisions(self.player, 600, self.colliders))
+        print(self.ray1.get_collisions(self.player, 1000, self.colliders))
+        self.ray2.get_collisions(self.player, 1000, self.colliders)
+        self.ray3.get_collisions(self.player, 1000, self.colliders)
+        self.ray4.get_collisions(self.player, 1000, self.colliders)
+        self.ray5.get_collisions(self.player, 1000, self.colliders)
+
         if self.goal_loc and (not self._ai_moving):
             pass
             # self.ai.pathfind(Node(self.to_grids(self.player.loc)), Node(self.goal_loc))

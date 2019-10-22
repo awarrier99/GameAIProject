@@ -225,19 +225,20 @@ def lerp(t, times, start, end):
 
 def in_sight(player, direction, range_, obstacles):
     ret = []
-    line_of_sight = get_line(player.loc, direction, range_)
+    line_of_sight = get_line(player.loc, direction, range_, 5)
     zone = player.rect.inflate(range_, range_)
     collidables = [rectangle.rect for rectangle in obstacles]  # to support indexing
     collisions = zone.collidelistall(collidables)
-    for x in range(1, len(line_of_sight), 10):
+    for x in range(1, len(line_of_sight)):
         for ind in collisions:
             collidable = collidables[ind]
             if collidable.collidepoint(line_of_sight[x]) and collidable not in ret:
                 ret.append(collidables[ind])
+                return ret
     return ret
 
 
-def get_line(start, direction, range_):
+def get_line(start, direction, range_, step):
     # Setup initial conditions
     x1, y1 = start.x, start.y
     x2 = int(x1 + range_ * math.cos(math.radians(direction)))
@@ -270,7 +271,7 @@ def get_line(start, direction, range_):
     # Iterate over bounding box generating points between start and end
     y = y1
     points = []
-    for x in range(x1, x2 + 1):
+    for x in range(x1, x2 + step):
         coord = (y, x) if is_steep else (x, y)
         points.append(coord)
         error -= abs(dy)
