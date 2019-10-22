@@ -24,6 +24,7 @@ class World:
         self.player = None
         self.moves = Queue()
         self.count = 0
+        self.wall_thickness = 6
         self.ai = AI(self.grid, self.ai_callback, World.ai_error_callback)
 
     def ai_callback(self, result):
@@ -111,7 +112,24 @@ class World:
         for wall_center in self.grid.walls:
             wall_x, wall_y = wall_center
             wall_p = self.to_pixels(Loc(wall_x, wall_y))
-            pygame.draw.rect(screen, black, (wall_p.x - self.ppg / 2, wall_p.y - self.ppg / 2, self.ppg, self.ppg))
+            if self.grid[wall_x][wall_y - 1].is_wall():  # if there is a wall above this wall
+                pygame.draw.rect(screen, black, (
+                wall_p.x - self.wall_thickness / 2, wall_p.y - self.ppg / 2, self.wall_thickness,
+                self.ppg / 2 + 1))
+            if self.grid[wall_x][wall_y + 1].is_wall():  # if there is a wall below this wall
+                pygame.draw.rect(screen, black, (
+                wall_p.x - self.wall_thickness / 2, wall_p.y + self.wall_thickness / 2, self.wall_thickness,
+                self.ppg / 2 + 1))
+            if self.grid[wall_x - 1][wall_y].is_wall():  # if there is to the left of this wall
+                pygame.draw.rect(screen, black, (
+                wall_p.x - self.ppg / 2, wall_p.y - self.wall_thickness / 2, self.ppg / 2 + 1,
+                self.wall_thickness))
+            if self.grid[wall_x + 1][wall_y].is_wall():  # if there is to the left of this wall
+                pygame.draw.rect(screen, black, (
+                wall_p.x + self.wall_thickness / 2, wall_p.y - self.wall_thickness / 2, self.ppg / 2 + 1,
+                self.wall_thickness))
+
+            pygame.draw.rect(screen, black, (wall_p.x - self.wall_thickness / 2, wall_p.y - self.wall_thickness / 2, self.wall_thickness, self.wall_thickness))
 
         for loc in self.path:
             path_x = loc[1].x

@@ -2,7 +2,7 @@ import pygame
 import math
 
 from pygame.math import Vector2
-
+from Ray import Ray
 
 class Player(pygame.sprite.Sprite):
 
@@ -23,7 +23,6 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.image.load('PlayerSprites/Images/rifle/move/survivor-move_rifle_0.png')
         self.image = pygame.transform.scale(self.image, (50, 33))
         self.rect = self.image.get_rect()
-
         self.loc = location
         self.rect.center = (self.loc.x, self.loc.y)
 
@@ -58,3 +57,4 @@ class Player(pygame.sprite.Sprite):
         if dx < 0:
             self.direction += 180
         self.rotate()
+

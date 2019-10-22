@@ -4,16 +4,18 @@ from Player import Player
 from util import Loc, Keys, Actions
 from VisualSensors import VisualSensors
 from World import World
+
 from argparse import ArgumentParser
+from Ray import Ray
 
 
 class Game:
     def __init__(self, cfg):
         self._running = True
         self.screen = None
-        self.size = self.width, self.height = cfg['width'] or 665, cfg['height'] or 437
+        self.size = self.width, self.height = cfg['width'] or 1085, cfg['height'] or 735
         self.all_sprites = pygame.sprite.Group()
-        self.ppg = cfg['ppg'] or 19
+        self.ppg = cfg['ppg'] or 35
         self.__ai_mode = cfg['ai']
         self.world = World((self.width, self.height), self.ppg, cfg['move_frames'], self.__ai_mode)
         self.player = Player(self.world.to_pixels(Loc(2, 2)))
@@ -24,6 +26,7 @@ class Game:
         self.playtime = 0
         self._enable_visuals = not cfg['novisuals']
         self.visual_sensors = None
+        # self.ray = Ray(self.player.loc, self.player.direction)
         self.last_grid = (0, 0)
         self.mouse_down = False
         self.key_1 = False
@@ -39,7 +42,7 @@ class Game:
         pygame.display.set_caption("James and Ashvin's (autistic) 'AI'")
 
         self.all_sprites.add(self.player)
-
+        # self.all_sprites.add(self.ray)
         self.background = pygame.Surface(self.screen.get_size())
         self.background.fill((255, 155, 155))
         self.background = self.background.convert()
@@ -110,6 +113,8 @@ class Game:
             if self._enable_visuals:
                 self.visual_sensors.update()
             self.world.update()
+            # self.ray.loc = self.player.loc
+            # self.ray.dir = self.player.direction
             self.redraw()
 
     def cleanup(self):
