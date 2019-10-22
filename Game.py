@@ -37,7 +37,7 @@ class Game:
         pygame.init()
         self.screen = pygame.display.set_mode(self.size, pygame.HWACCEL | pygame.DOUBLEBUF)
         if self._enable_visuals:
-            self.visual_sensors = VisualSensors(self.player, self.world.to_pixels, self.world.ppg)
+            self.visual_sensors = VisualSensors(self.player, self.world.to_pixels, self.world.ppg, *self.size)
         pygame.display.set_caption("James and Ashvin's (autistic) 'AI'")
 
         if self._enable_dirty_rects:

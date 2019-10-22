@@ -119,36 +119,24 @@ class World:
             wall_p = self.to_pixels(Loc(wall_x, wall_y))
             if self.grid[wall_x][wall_y - 1].is_wall():  # if there is a wall above this wall
                 wall_rects.append(pygame.Rect(wall_p.x - self.wall_thickness / 2, wall_p.y - self.ppg / 2,
-                                                       self.wall_thickness, self.ppg / 2 + 1))
+                                              self.wall_thickness, self.ppg / 2 + 1))
             if self.grid[wall_x][wall_y + 1].is_wall():  # if there is a wall below this wall
                 wall_rects.append(pygame.Rect(wall_p.x - self.wall_thickness / 2, wall_p.y +
-                                                       self.wall_thickness / 2, self.wall_thickness, self.ppg / 2 + 1))
+                                              self.wall_thickness / 2, self.wall_thickness, self.ppg / 2 + 1))
             if self.grid[wall_x - 1][wall_y].is_wall():  # if there is to the left of this wall
                 wall_rects.append(pygame.Rect(wall_p.x - self.ppg / 2, wall_p.y - self.wall_thickness / 2,
-                                                       self.ppg / 2 + 1, self.wall_thickness))
+                                              self.ppg / 2 + 1, self.wall_thickness))
             if self.grid[wall_x + 1][wall_y].is_wall():  # if there is to the left of this wall
                 wall_rects.append(pygame.Rect(wall_p.x + self.wall_thickness / 2, wall_p.y -
-                                                       self.wall_thickness / 2, self.ppg / 2 + 1, self.wall_thickness))
+                                              self.wall_thickness / 2, self.ppg / 2 + 1, self.wall_thickness))
 
             wall_rects.append(pygame.Rect(wall_p.x - self.wall_thickness / 2, wall_p.y - self.wall_thickness / 2,
-                                                   self.wall_thickness, self.wall_thickness))
+                                          self.wall_thickness, self.wall_thickness))
 
         return wall_rects
 
     def draw(self, screen, background):
         black = 0, 0, 0
-        green = 0, 255, 0
-        red = 255, 0, 0
-        i = 0
-        skip = 0
-        while i <= self.width:
-            pygame.draw.line(screen, black, (i, 0), (i, self.height))
-            pygame.draw.line(screen, black, (0, i), (self.width, i))
-            if skip == self.ppg - 1:
-                skip = 1
-            else:
-                skip = self.ppg - 1
-            i += skip
 
         if self._enable_dirty_rects:
             new_walls = [w for w in self.grid.walls if w not in self.grid._last_walls]
