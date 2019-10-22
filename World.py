@@ -61,7 +61,7 @@ class World:
         return Loc(int(pixel_loc.x / self.ppg), int(pixel_loc.y / self.ppg))
 
     def update(self):
-        print(self.ray1.get_collisions(self.player, 1000, self.colliders))
+        self.ray1.get_collisions(self.player, 1000, self.colliders)
         self.ray2.get_collisions(self.player, 1000, self.colliders)
         self.ray3.get_collisions(self.player, 1000, self.colliders)
         self.ray4.get_collisions(self.player, 1000, self.colliders)
