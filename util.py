@@ -1,5 +1,6 @@
 import pygame
 import queue
+import math
 
 
 directions = [(-1, -1), (0, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (0, 1), (1, 1)]
@@ -220,3 +221,63 @@ def lerp(t, times, start, end):
     dt = (t - tmin) / (tmax - tmin)
 
     return Loc(dt * (end.x - start.x) + start.x, dt * (end.y - start.y) + start.y)
+
+
+def in_sight(player, direction, range_, obstacles):
+    ret = []
+    line_of_sight = get_line(player.loc, direction, range_)
+    zone = player.rect.inflate(range_, range_)
+    collidables = [rectangle.rect for rectangle in obstacles]  # to support indexing
+    collisions = zone.collidelistall(collidables)
+    for x in range(1, len(line_of_sight), 10):
+        for ind in collisions:
+            if collidables[ind].collidepoint(line_of_sight[x]):
+                ret.append(collidables[ind])
+    return ret
+
+
+def get_line(start, direction, range_):
+    # Setup initial conditions
+    x1, y1 = start.x, start.y
+    x2 = int(x1 + range_ * math.cos(math.radians(direction)))
+    y2 = int(y1 + range_ * math.sin(math.radians(direction)))
+    dx = x2 - x1
+    dy = y2 - y1
+
+    # Determine how steep the line is
+    is_steep = abs(dy) > abs(dx)
+    # Rotate line
+    if is_steep:
+        x1, y1 = y1, x1
+        x2, y2 = y2, x2
+
+    # Swap start and end points if necessary and store swap state
+    swapped = False
+    if x1 > x2:
+        x1, x2 = x2, x1
+        y1, y2 = y2, y1
+        swapped = True
+
+    # Recalculate differentials
+    dx = x2 - x1
+    dy = y2 - y1
+
+    # Calculate error
+    error = int(dx / 2.0)
+    ystep = 1 if y1 < y2 else -1
+
+    # Iterate over bounding box generating points between start and end
+    y = y1
+    points = []
+    for x in range(x1, x2 + 1):
+        coord = (y, x) if is_steep else (x, y)
+        points.append(coord)
+        error -= abs(dy)
+        if error < 0:
+            y += ystep
+            error += dx
+
+    # Reverse the list if the coordinates were swapped
+    if swapped:
+        points.reverse()
+    return points

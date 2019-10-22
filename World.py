@@ -4,6 +4,8 @@ from Grid import Grid
 from AI import AI
 from util import Loc, Node, lerp, directions, actions, Queue
 from traceback import print_exception
+from Ray import Ray
+from Collider import Collider
 
 
 class World:
@@ -26,6 +28,9 @@ class World:
         self.count = 0
         self.wall_thickness = 6
         self.ai = AI(self.grid, self.ai_callback, World.ai_error_callback)
+        self.ray = Ray()
+        self.collider1 = Collider(Loc(50, 50))
+        self.colliders = [self.collider1]
 
     def ai_callback(self, result):
         self.path = result
@@ -47,8 +52,10 @@ class World:
         return Loc(int(pixel_loc.x / self.ppg), int(pixel_loc.y / self.ppg))
 
     def update(self):
+        print(self.ray.get_collisions(self.player, 600, self.colliders))
         if self.goal_loc and (not self._ai_moving):
-            self.ai.pathfind(Node(self.to_grids(self.player.loc)), Node(self.goal_loc))
+            pass
+            # self.ai.pathfind(Node(self.to_grids(self.player.loc)), Node(self.goal_loc))
 
         if self.frame == self.frames[-1] + 1:
             self.obj = self.start_loc = self.end_loc = None

@@ -6,7 +6,6 @@ from VisualSensors import VisualSensors
 from World import World
 
 from argparse import ArgumentParser
-from Ray import Ray
 
 
 class Game:
@@ -26,7 +25,6 @@ class Game:
         self.playtime = 0
         self._enable_visuals = not cfg['novisuals']
         self.visual_sensors = None
-        # self.ray = Ray(self.player.loc, self.player.direction)
         self.last_grid = (0, 0)
         self.mouse_down = False
         self.key_1 = False
@@ -42,7 +40,8 @@ class Game:
         pygame.display.set_caption("James and Ashvin's (autistic) 'AI'")
 
         self.all_sprites.add(self.player)
-        # self.all_sprites.add(self.ray)
+        self.all_sprites.add(*self.world.colliders)
+
         self.background = pygame.Surface(self.screen.get_size())
         self.background.fill((255, 155, 155))
         self.background = self.background.convert()
@@ -113,8 +112,6 @@ class Game:
             if self._enable_visuals:
                 self.visual_sensors.update()
             self.world.update()
-            # self.ray.loc = self.player.loc
-            # self.ray.dir = self.player.direction
             self.redraw()
 
     def cleanup(self):
