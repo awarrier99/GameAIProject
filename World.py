@@ -56,7 +56,8 @@ class World:
         return Loc(int(pixel_loc.x / self.ppg), int(pixel_loc.y / self.ppg))
 
     def update(self):
-        print(self.ray.get_collisions(self.player, 600, self.colliders))
+        self.ray.get_collisions(self.player, 600, self.colliders)
+        # print(self.ray.get_collisions(self.player, 600, self.colliders))
         if self.goal_loc and (not self._ai_moving):
             pass
             # self.ai.pathfind(Node(self.to_grids(self.player.loc)), Node(self.goal_loc))
