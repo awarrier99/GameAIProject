@@ -74,7 +74,7 @@ class World:
                 self.frames = range(self.move_frames)
             loc = self.to_grids(obj.loc)
             end_loc = Loc(loc.x + direction[0], loc.y + direction[1])
-            if not (self.grid[end_loc.x][end_loc.y].is_wall() or self.grid.is_blocked(Node(loc), direction)):
+            if not self.grid[end_loc.x][end_loc.y].is_wall():
                 self.obj = obj
                 self.start_loc = obj.loc
                 self.end_loc = self.to_pixels(end_loc)

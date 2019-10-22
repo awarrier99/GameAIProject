@@ -20,7 +20,7 @@ class Grid:
             loc = Loc(node.loc.x + dr[0], node.loc.y + dr[1])
             if self.is_valid(loc):
                 n = self[loc.x][loc.y]
-                if not n.is_wall() and not self.is_blocked(node, dr):
+                if not n.is_wall():
                     n.action = actions[idx]
                     if dr[0] and dr[1]:
                         n.cost = 2 ** 0.5
