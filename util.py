@@ -232,17 +232,65 @@ def lerp(t, times, start, end):
     return Loc(dt * (end.x - start.x) + start.x, dt * (end.y - start.y) + start.y)
 
 
-def in_sight(player_loc, zone, direction, range_, collidables, walls):
-    line_of_sight = get_line(player_loc, direction, range_, 5)
-    collisions = zone.collidelistall(collidables)
-    for x in range(1, len(line_of_sight)):
-        loc = to_grids(Loc(*line_of_sight[x]))
-        if (loc.x, loc.y) in walls:
-            break
-        for ind in collisions:
-            if collidables[ind].collidepoint(line_of_sight[x]):
-                return collidables[ind], ind
-    return None
+def in_sight(loc, fov, direction, collidables, walls):
+    in_fov = []
+    visible = []
+    for collidable in collidables:
+        obj_direction = None
+        points = [collidable.center, collidable.topleft, collidable.bottomleft, collidable.topright, collidable.bottomright]
+        for pt in points:
+            cur_direction = get_direction(loc, Loc(*pt))
+            if pt == collidable.center:
+                obj_direction = cur_direction
+
+            angle = abs(direction - cur_direction)
+            if angle <= (fov / 2.0) or angle >= (360 - (fov / 2.0)):
+                in_fov.append((collidable, obj_direction))
+                break
+
+    for collidable, obj_direction in in_fov:
+        collision_line = create_line(loc, Loc(*collidable.center), 1)
+        blocked = False
+        for x in range(1, len(collision_line)):
+            grid_loc = to_grids(Loc(*collision_line[x]))
+            if (grid_loc.x, grid_loc.y) in walls:
+                blocked = True
+                break
+            for c, _ in in_fov:
+                if (not c == collidable) and c.collidepoint(collision_line[x]):
+                    blocked = True
+            if blocked:
+                break
+        if not blocked:
+            visible.append((collidable, collision_line))
+
+    return visible
+
+
+def get_direction(start, end):
+    dx = end.x - start.x
+    dy = end.y - start.y
+
+    direction = math.degrees(math.atan2(-dy, -dx)) + 180
+    return direction
+
+
+def create_line(start, end, step):
+    points = []
+    if end.x < start.x:
+        t = end
+        end = start
+        start = t
+    if end.x == start.x:
+        ys = range(min(start.y, end.y), max(start.y, end.y))
+        xs = [start.x for _ in ys]
+        return list(zip(xs, ys))
+    m = (end.y - start.y) / (end.x - start.x)
+    f = lambda x: (m * (x - start.x)) + start.y
+    for x in range(start.x, end.x, step):
+        points.append((x, f(x)))
+
+    return points
 
 
 def get_line(start, direction, range_, step):

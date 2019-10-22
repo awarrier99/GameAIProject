@@ -9,11 +9,12 @@ from Collider import Collider
 
 
 class World:
-    def __init__(self, size, move_frames, ai_mode, enable_dirty_rects):
+    def __init__(self, size, move_frames, ai_mode, pathfinding, enable_dirty_rects):
         self.size = self.width, self.height = size
         self.grid = Grid(int(self.width / ppg), int(self.height / ppg))
         self.path = []
         self.__ai_mode = ai_mode
+        self.__pathfinding = pathfinding
         self._ai_moving = False
         self.goal_loc = None if self.__ai_mode else Loc(10, 10)
         self.move_frames = move_frames or 12
@@ -32,13 +33,16 @@ class World:
         self.wall_thickness = 6
 
         self.ai = AI(self.grid, self.ai_callback, World.task_error_callback)
-        self.rays = [Ray(True, self.ray_callback, self.task_error_callback) for _ in range(4)]
+        self.rays = [Ray(self.ray_callback, self.task_error_callback) for _ in range(1)]
 
         self.collider1 = Collider(to_pixels(Loc(5, 5)))
         self.collider2 = Collider(to_pixels(Loc(8, 5)))
         self.collider3 = Collider(to_pixels(Loc(4, 6)))
         self.collider4 = Collider(to_pixels(Loc(3, 5)))
         self.colliders = [self.collider1, self.collider2, self.collider3, self.collider4]
+        # self.colliders = [self.collider2]
+
+        self.collision_lines = []
 
     def ai_callback(self, result):
         self.path = result
@@ -48,10 +52,11 @@ class World:
             for move in result[1:]:
                 self.moves.push((self.player, move[0]))
 
-    def ray_callback(self, result):
-        pass
-        # if result:
-        #     print(self.colliders[result[1]])
+    def ray_callback(self, results):
+        # pass
+        self.collision_lines = []
+        for collidable, collision_line in results:
+            self.collision_lines.append(collision_line)
 
     @staticmethod
     def task_error_callback(err):
@@ -63,10 +68,9 @@ class World:
 
     def update(self):
         for ray in self.rays:
-            ray.update(self.player)
-            collision = ray.get_collision(self.player, 1000, self.colliders, self.grid.walls)
+            ray.get_collision(self.player, self.colliders, self.grid.walls)
 
-        if self.goal_loc and (not self._ai_moving):
+        if self.__pathfinding and self.goal_loc and (not self._ai_moving):
             self.ai.pathfind(Node(to_grids(self.player.loc)), Node(self.goal_loc))
 
         if self.frame == self.frames[-1] + 1:
@@ -139,8 +143,6 @@ class World:
         return wall_rects
 
     def draw(self, screen, background):
-        for ray in self.rays:
-            ray.draw(self.player.loc, self.player.direction, screen)
         black = 0, 0, 0
 
         if self._enable_dirty_rects:
@@ -151,10 +153,6 @@ class World:
             self.grid._last_walls = self.grid.walls.copy()
         else:
             self.wall_rects = self.generate_wall_rects(self.grid.walls)
-
-        if self.new_wall_rects:
-            print('old', self.old_wall_rects)
-            print('new', self.new_wall_rects)
 
         if self._enable_dirty_rects:
             for rect in self.new_wall_rects:

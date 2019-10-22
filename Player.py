@@ -2,7 +2,7 @@ import pygame
 import math
 
 from pygame.math import Vector2
-from Ray import Ray
+from util import Loc, get_direction
 
 
 class Player(pygame.sprite.Sprite):
@@ -47,22 +47,12 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=(self.loc.x, self.loc.y) + offset_rotated)
 
     def update(self):
-
-
-
-        self.direction %= 360
-
         self.rect.x = self.loc.x
         self.rect.y = self.loc.y
 
         x, y = pygame.mouse.get_pos()
-        dx = (x - self.loc.x) or 0.01
-        dy = (y - self.loc.y)
 
-        self.direction = math.degrees(math.atan(dy/dx))
-        if dx < 0:
-            self.direction += 180
-        if not self.direction == self._last_dir:
-            self.dirty = 1
-            self.rotate()
+        self.direction = get_direction(self.loc, Loc(x, y))
+        self.dirty = 1
+        self.rotate()
 
