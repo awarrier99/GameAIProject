@@ -57,9 +57,9 @@ class VisualSensors:
         pygame.draw.line(screen, green, l1_p1, l2_p2)
         # pygame.gfxdraw.line(screen, int(l2_p1[0]), int(l2_p1[1]), int(l2_p2[0]), int(l2_p2[1]), green)
 
-        l3_p2 = x1 + 700 * math.cos(math.radians(self.ray_cast_angle + self.player.direction)), y1 + 700 * math.sin(
-            math.radians(self.ray_cast_angle + self.player.direction))
-        pygame.draw.line(screen, yellow, l1_p1, l3_p2)
+        # l3_p2 = x1 + 700 * math.cos(math.radians(self.ray_cast_angle + self.player.direction)), y1 + 700 * math.sin(
+        #     math.radians(self.ray_cast_angle + self.player.direction))
+        # pygame.draw.line(screen, yellow, l1_p1, l3_p2)
 
         for loc in path:
             path_x = loc[1].x

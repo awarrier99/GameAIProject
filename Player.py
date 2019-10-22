@@ -32,6 +32,7 @@ class Player(pygame.sprite.Sprite):
         self.offset = Vector2(9.346, -2.72)  # We shift the sprite 50 px to the right.
         self.direction = 0  # degrees: 0º is facing right
         self._last_dir = 0
+        self.view_distance = 700
         self.fov = 65  # degrees
 
     def shoot(self, direction):
@@ -46,13 +47,16 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=(self.loc.x, self.loc.y) + offset_rotated)
 
     def update(self):
+
+
+
         self.direction %= 360
 
         self.rect.x = self.loc.x
         self.rect.y = self.loc.y
 
         x, y = pygame.mouse.get_pos()
-        dx = (x - self.loc.x) or 0.0000001
+        dx = (x - self.loc.x) or 0.01
         dy = (y - self.loc.y)
 
         self.direction = math.degrees(math.atan(dy/dx))

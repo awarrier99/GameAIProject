@@ -44,8 +44,9 @@ class Game:
             self.all_sprites = pygame.sprite.LayeredDirty(self.player)
         else:
             self.all_sprites = pygame.sprite.Group()
-            self.all_sprites.add(self.player)
             self.all_sprites.add(*self.world.colliders)
+            self.all_sprites.add(self.player)
+
 
         self.background = pygame.Surface(self.screen.get_size())
         self.background.fill((255, 155, 155))

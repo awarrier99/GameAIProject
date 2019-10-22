@@ -32,7 +32,7 @@ class World:
         self.old_wall_rects = []
         self.wall_thickness = 6
         self.ai = AI(self.grid, self.ai_callback, World.ai_error_callback)
-        self.rays = [Ray() for _ in range(1)]
+        self.rays = [Ray(True) for _ in range(1)]
 
         self.collider1 = Collider(self.to_pixels(Loc(5, 5)))
         self.collider2 = Collider(self.to_pixels(Loc(8, 5)))
@@ -61,10 +61,12 @@ class World:
 
     def update(self):
         for ray in self.rays:
+            ray.update(self.player)
             collision = ray.get_collision(self.player, 1000, self.colliders)
 
         if self.goal_loc and (not self._ai_moving):
-            self.ai.pathfind(Node(self.to_grids(self.player.loc)), Node(self.goal_loc))
+            pass
+            # self.ai.pathfind(Node(self.to_grids(self.player.loc)), Node(self.goal_loc))
 
         if self.frame == self.frames[-1] + 1:
             self.obj.dirty = 0
@@ -136,6 +138,8 @@ class World:
         return wall_rects
 
     def draw(self, screen, background):
+        for ray in self.rays:
+            ray.draw(self.player.loc, self.player.direction, screen)
         black = 0, 0, 0
 
         if self._enable_dirty_rects:
