@@ -2,7 +2,7 @@ import pygame
 import util
 
 from Player import Player
-from util import PixelLoc, GridLoc, Keys, Actions
+from util import PixelLoc, GridLoc, Keys, Actions, Colors
 from VisualSensors import VisualSensors
 from World import World
 from Workers import Workers
@@ -40,31 +40,28 @@ class Game:
             print('Running in AI mode. Move controls disabled')
         pygame.init()
         self.screen = pygame.display.set_mode(self.size, pygame.HWACCEL | pygame.DOUBLEBUF)
+
         if self._enable_visuals:
             self.visual_sensors = VisualSensors(self.player, *self.size)
         pygame.display.set_caption("James and Ashvin's (autistic) 'AI'")
 
         if self._enable_dirty_rects:
             self.all_sprites = pygame.sprite.LayeredDirty(self.player)
+            self.all_sprites.clear(self.screen, self.background)
         else:
-            self.all_sprites = pygame.sprite.Group()
-            self.all_sprites.add(*self.world.colliders)
-            self.all_sprites.add(self.player)
+            self.all_sprites = pygame.sprite.Group(self.player, *self.world.colliders)
 
         self.background = pygame.Surface(self.screen.get_size())
         self.background.fill((255, 155, 155))
         self.background = self.background.convert()
         self.screen.blit(self.background, (0, 0))
-        self.all_sprites.clear(self.screen, self.background)
 
     def draw_stats(self):
-        white = 255, 255, 255
-        black = 0, 0, 0
         font = pygame.font.Font('freesansbold.ttf', 16)
         stats = 'Player: {} (grid) | {} (pixels) | {} degrees (direction)'.format(self.player.loc.to_grid(),
                                                                                   self.player.loc,
                                                                                   round(self.player.direction, 2))
-        text = font.render(stats, True, white, black)
+        text = font.render(stats, True, Colors.WHITE, Colors.BLACK)
         text_rect = text.get_rect()
         text_rect.center = (self.width - int(text_rect.width / 2) - 5, self.height - text_rect.height)
         self.screen.blit(text, text_rect)

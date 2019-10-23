@@ -70,6 +70,13 @@ class Keys:
             return keys == cls.DOWN[0] or keys == cls.DOWN[1]
 
 
+class Colors:
+    WHITE = (255, 255, 255)
+    BLACK = (0, 0, 0)
+    GREEN = (0, 255, 0)
+    RED = (255, 0, 0)
+
+
 class Loc:
     def __init__(self, x, y):
         self.__x = int(x)

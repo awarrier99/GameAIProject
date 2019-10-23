@@ -2,7 +2,7 @@ import pygame
 
 from Grid import Grid
 from AI import AI
-from util import GridLoc, Node, lerp, directions, actions, Queue, ppg
+from util import GridLoc, Node, lerp, directions, actions, Queue, ppg, Colors
 from traceback import print_exception
 from Ray import Ray
 from Collider import Collider
@@ -143,8 +143,6 @@ class World:
         return wall_rects
 
     def draw(self, screen, background):
-        black = 0, 0, 0
-
         if self._enable_dirty_rects:
             new_walls = [w for w in self.grid.walls if w not in self.grid._last_walls]
             old_walls = [w for w in self.grid._last_walls if w not in self.grid.walls]
@@ -156,10 +154,10 @@ class World:
 
         if self._enable_dirty_rects:
             for rect in self.new_wall_rects:
-                screen.fill(black, rect)
+                screen.fill(Colors.BLACK, rect)
             for rect in self.old_wall_rects:
                 screen.blit(background, rect)
         else:
             for rect in self.wall_rects:
-                screen.fill(black, rect)
+                screen.fill(Colors.BLACK, rect)
         return self.new_wall_rects, self.old_wall_rects
