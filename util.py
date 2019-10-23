@@ -74,15 +74,26 @@ class Loc:
     def __init__(self, x, y):
         self.__x = int(x)
         self.__y = int(y)
+        self.__type = None
+
+    def is_grid(self):
+        return self.__type == 'Grid'
+
+    def is_pixel(self):
+        return self.__type == 'Pixel'
 
     def __str__(self):
+        if self.__type:
+            return '{} Location ({}, {})'.format(self.__type, self.x, self.y)
         return '({}, {})'.format(self.x, self.y)
 
     def __repr__(self):
+        if self.__type:
+            return '{}Loc({}, {})'.format(self.__type, self.x, self.y)
         return 'Loc({}, {})'.format(self.x, self.y)
 
     def __eq__(self, other):
-        if not other or type(other) is not Loc:
+        if not other or type(other) is not type(self):
             return False
 
         return (self.x, self.y) == (other.x, other.y)
@@ -97,6 +108,24 @@ class Loc:
     @property
     def y(self):
         return self.__y
+
+
+class GridLoc(Loc):
+    def __init__(self, x, y):
+        super().__init__(x, y)
+        self.__type = 'Grid'
+
+    def to_pixel(self):
+        return PixelLoc((self.x * ppg) + int(ppg / 2) + 1, (self.y * ppg) + int(ppg / 2) + 1)
+
+
+class PixelLoc(Loc):
+    def __init__(self, x, y):
+        super().__init__(x, y)
+        self.__type = 'Pixel'
+
+    def to_grid(self):
+        return GridLoc(int(self.x / ppg), int(self.y / ppg))
 
 
 class Node:
@@ -171,21 +200,13 @@ def dist(a, b):
     if type(a) is Node and type(b) is Node:
         dx = abs(a.loc.x - b.loc.x)
         dy = abs(a.loc.y - b.loc.y)
-    elif type(a) is Loc and type(b) is Loc:
+    elif isinstance(a, Loc) and isinstance(b, Loc):
         dx = abs(a.x - b.x)
         dy = abs(a.y - b.y)
     else:
         raise ValueError('a ({}) and b ({}) type mismatch or not one of Node or Loc'.format(type(a), type(b)))
 
     return ((dx ** 2) + (dy ** 2)) ** 0.5
-
-
-def to_pixels(grid_loc):
-    return Loc((grid_loc.x * ppg) + int(ppg / 2) + 1, (grid_loc.y * ppg) + int(ppg / 2) + 1)
-
-
-def to_grids(pixel_loc):
-    return Loc(int(pixel_loc.x / ppg), int(pixel_loc.y / ppg))
 
 
 def euclidean_heuristic(node, goal):
@@ -229,7 +250,7 @@ def lerp(t, times, start, end):
     tmin, tmax = min(times), max(times)
     dt = (t - tmin) / (tmax - tmin)
 
-    return Loc(dt * (end.x - start.x) + start.x, dt * (end.y - start.y) + start.y)
+    return PixelLoc(dt * (end.x - start.x) + start.x, dt * (end.y - start.y) + start.y)
 
 
 def in_sight(loc, fov, direction, collidables, walls):
@@ -256,7 +277,7 @@ def in_sight(loc, fov, direction, collidables, walls):
         collision_line = create_line(loc, col_loc, 1)
         blocked = False
         for x in range(1, len(collision_line)):
-            grid_loc = to_grids(Loc(*collision_line[x]))
+            grid_loc = PixelLoc(*collision_line[x]).to_grid()
             if (grid_loc.x, grid_loc.y) in walls:
                 blocked = True
                 break

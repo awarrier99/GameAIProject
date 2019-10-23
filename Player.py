@@ -2,7 +2,8 @@ import pygame
 import math
 
 from pygame.math import Vector2
-from util import Loc, get_direction
+from util import PixelLoc, get_direction, in_sight
+from Workers import Workers
 
 
 class Player(pygame.sprite.Sprite):
@@ -34,6 +35,13 @@ class Player(pygame.sprite.Sprite):
         self._last_dir = 0
         self.view_distance = 700
         self.fov = 65  # degrees
+        self._resolved = True
+        self.wcb = None
+        self.ecb = None
+
+    def cb(self, result):
+        self._resolved = True
+        self.wcb(result)
 
     def shoot(self, direction):
         pass
@@ -46,13 +54,20 @@ class Player(pygame.sprite.Sprite):
         # Create a new rect with the center of the sprite + the offset.
         self.rect = self.image.get_rect(center=(self.loc.x, self.loc.y) + offset_rotated)
 
+    def scan(self, sprites, walls):
+        if self._resolved:
+            self._resolved = False
+            collidables = [sprite.rect for sprite in sprites]
+            args = (self.loc, self.fov, self.direction, collidables, walls)
+            Workers.delegate(in_sight, args, callback=self.cb, error_callback=self.ecb)
+
     def update(self):
         self.rect.x = self.loc.x
         self.rect.y = self.loc.y
 
         x, y = pygame.mouse.get_pos()
 
-        self.direction = get_direction(self.loc, Loc(x, y))
+        self.direction = get_direction(self.loc, PixelLoc(x, y))
         self.dirty = 1
         self.rotate()
 

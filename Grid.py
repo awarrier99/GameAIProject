@@ -1,4 +1,4 @@
-from util import Node, Wall, Loc, directions, actions
+from util import Node, Wall, GridLoc, directions, actions
 
 
 class Grid:
@@ -18,7 +18,7 @@ class Grid:
         node_list = []
 
         for idx, dr in enumerate(directions):
-            loc = Loc(node.loc.x + dr[0], node.loc.y + dr[1])
+            loc = GridLoc(node.loc.x + dr[0], node.loc.y + dr[1])
             if self.is_valid(loc):
                 n = self[loc.x][loc.y]
                 if not n.is_wall():
@@ -69,13 +69,13 @@ class GridCol:
         self.grid = grid
 
     def __getitem__(self, idx):
-        if not self.grid.is_valid(Loc(self._col_num, idx)):
-            return Wall(Loc(-1, -1))
+        if not self.grid.is_valid(GridLoc(self._col_num, idx)):
+            return Wall(GridLoc(-1, -1))
 
         if self.grid._grid[self._col_num][idx] == 'W':
-            return Wall(Loc(self._col_num, idx))
+            return Wall(GridLoc(self._col_num, idx))
 
-        return Node(Loc(self._col_num, idx))
+        return Node(GridLoc(self._col_num, idx))
 
     def __setitem__(self, idx, value):
         self.grid._grid[self._col_num][idx] = value

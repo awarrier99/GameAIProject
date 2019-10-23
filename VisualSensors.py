@@ -2,7 +2,7 @@ import pygame
 import math
 import util
 
-from util import Loc, to_pixels
+from util import GridLoc
 
 
 class VisualSensors:
@@ -19,7 +19,6 @@ class VisualSensors:
     def draw(self, screen, path, goal, collision_lines):
         black = 0, 0, 0
         green = 0, 255, 0
-        yellow = 255, 255, 102
         red = 255, 0, 0
 
         i = 0
@@ -52,7 +51,7 @@ class VisualSensors:
         for loc in path:
             path_x = loc[1].x
             path_y = loc[1].y
-            path_p = to_pixels(Loc(path_x, path_y))
+            path_p = GridLoc(path_x, path_y).to_pixel()
             if loc[1] == goal:
                 pygame.draw.rect(screen, red, (path_p.x - util.ppg / 2, path_p.y - util.ppg / 2, util.ppg, util.ppg))
             else:

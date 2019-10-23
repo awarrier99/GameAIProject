@@ -2,28 +2,30 @@ import pygame
 
 from Grid import Grid
 from AI import AI
-from util import Loc, Node, lerp, directions, actions, Queue, ppg, to_pixels, to_grids
+from util import GridLoc, Node, lerp, directions, actions, Queue, ppg
 from traceback import print_exception
 from Ray import Ray
 from Collider import Collider
 
 
 class World:
-    def __init__(self, size, move_frames, ai_mode, pathfinding, enable_dirty_rects):
+    def __init__(self, player, size, move_frames, ai_mode, pathfinding, enable_dirty_rects):
         self.size = self.width, self.height = size
         self.grid = Grid(int(self.width / ppg), int(self.height / ppg))
         self.path = []
         self.__ai_mode = ai_mode
         self.__pathfinding = pathfinding
         self._ai_moving = False
-        self.goal_loc = None if self.__ai_mode else Loc(10, 10)
-        self.move_frames = move_frames or 12
+        self.goal_loc = None if self.__ai_mode else GridLoc(10, 10)
+        self.move_frames = move_frames
         self.obj = None
         self.frame = 0
         self.start_loc = None
         self.end_loc = None
         self.frames = range(self.move_frames)
-        self.player = None
+        self.player = player
+        self.player.wcb = self.scan_callback
+        self.player.ecb = World.task_error_callback
         self.moves = Queue()
         self.count = 0
         self._enable_dirty_rects = enable_dirty_rects
@@ -33,12 +35,12 @@ class World:
         self.wall_thickness = 6
 
         self.ai = AI(self.grid, self.ai_callback, World.task_error_callback)
-        self.rays = [Ray(self.ray_callback, self.task_error_callback) for _ in range(1)]
+        # self.rays = [Ray(self.ray_callback, self.task_error_callback) for _ in range(1)]
 
-        self.collider1 = Collider(to_pixels(Loc(5, 5)))
-        self.collider2 = Collider(to_pixels(Loc(8, 5)))
-        self.collider3 = Collider(to_pixels(Loc(4, 6)))
-        self.collider4 = Collider(to_pixels(Loc(3, 5)))
+        self.collider1 = Collider(GridLoc(5, 5).to_pixel())
+        self.collider2 = Collider(GridLoc(8, 5).to_pixel())
+        self.collider3 = Collider(GridLoc(4, 6).to_pixel())
+        self.collider4 = Collider(GridLoc(3, 5).to_pixel())
         self.colliders = [self.collider1, self.collider2, self.collider3, self.collider4]
         # self.colliders = [self.collider2]
 
@@ -52,7 +54,7 @@ class World:
             for move in result[1:]:
                 self.moves.push((self.player, move[0]))
 
-    def ray_callback(self, results):
+    def scan_callback(self, results):
         # pass
         self.collision_lines = []
         for collidable, collision_line in results:
@@ -63,15 +65,13 @@ class World:
         print('Task failed')
         print_exception(type(err), err, None)
 
-    def get_grid(self, loc):
-        return self.grid[loc.x][loc.y]
-
     def update(self):
-        for ray in self.rays:
-            ray.get_collision(self.player, self.colliders, self.grid.walls)
+        # for ray in self.rays:
+        #     ray.get_collision(self.player, self.colliders, self.grid.walls)
+        self.player.scan(self.colliders, self.grid.walls)
 
         if self.__pathfinding and self.goal_loc and (not self._ai_moving):
-            self.ai.pathfind(Node(to_grids(self.player.loc)), Node(self.goal_loc))
+            self.ai.pathfind(Node(self.player.loc.to_grid()), Node(self.goal_loc))
 
         if self.frame == self.frames[-1] + 1:
             self.obj.dirty = 0
@@ -96,13 +96,13 @@ class World:
                 self.frames = range(int(self.move_frames * 1.6))
             else:
                 self.frames = range(self.move_frames)
-            loc = to_grids(obj.loc)
-            end_loc = Loc(loc.x + direction[0], loc.y + direction[1])
+            loc = obj.loc.to_grid()
+            end_loc = GridLoc(loc.x + direction[0], loc.y + direction[1])
             if not self.grid[end_loc.x][end_loc.y].is_wall():
                 obj.dirty = 1
                 self.obj = obj
                 self.start_loc = obj.loc
-                self.end_loc = to_pixels(end_loc)
+                self.end_loc = end_loc.to_pixel()
         elif self.frame == self.move_frames - 2:
             self.moves.push((obj, action))
 
@@ -123,7 +123,7 @@ class World:
         wall_rects = []
         for wall_center in walls:
             wall_x, wall_y = wall_center
-            wall_p = to_pixels(Loc(wall_x, wall_y))
+            wall_p = GridLoc(wall_x, wall_y).to_pixel()
             if self.grid[wall_x][wall_y - 1].is_wall():  # if there is a wall above this wall
                 wall_rects.append(pygame.Rect(wall_p.x - self.wall_thickness / 2, wall_p.y - ppg / 2,
                                               self.wall_thickness, ppg / 2 + 1))

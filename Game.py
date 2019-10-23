@@ -2,7 +2,7 @@ import pygame
 import util
 
 from Player import Player
-from util import Loc, Keys, Actions, to_grids, to_pixels
+from util import PixelLoc, GridLoc, Keys, Actions
 from VisualSensors import VisualSensors
 from World import World
 from Workers import Workers
@@ -12,27 +12,28 @@ from argparse import ArgumentParser
 
 class Game:
     def __init__(self, cfg):
-        self._running = True
+        self.__running = True
         self.screen = None
+        self.init_config(cfg)
+        self.player = Player(GridLoc(2, 2).to_pixel())
+        self.world = World(self.player, (self.width, self.height), self.move_frames, self.__ai_mode, self.__pathfinding,
+                           self._enable_dirty_rects)
+        self.all_sprites = None
+        self.background = None
+        self.clock = pygame.time.Clock()
+        self.playtime = 0
+        self.visual_sensors = None
+        self.last_grid = (0, 0)
+
+    def init_config(self, cfg):
         self.size = self.width, self.height = cfg['width'] or 1085, cfg['height'] or 735
         self.__ai_mode = cfg['ai']
         self.__pathfinding = self.__ai_mode or (not cfg['no_pathfinding'])
         self._enable_dirty_rects = cfg['dirty_rects']
-        self.world = World((self.width, self.height), cfg['move_frames'], self.__ai_mode, self.__pathfinding, self._enable_dirty_rects)
-        self.player = Player(to_pixels(Loc(2, 2)))
-        self.all_sprites = None
-        self.world.player = self.player
-        self.background = None
-        self.clock = pygame.time.Clock()
+        self.move_frames = cfg['move_frames'] or 12
         self.FPS = cfg['fps'] or 60
-        self.playtime = 0
         self._enable_visuals = not cfg['no_visuals']
         self._enable_stats = not cfg['no_stats']
-        self.visual_sensors = None
-        self.last_grid = (0, 0)
-        self.mouse_down = False
-        self.key_1 = False
-        self.key_2 = False
 
     def setup(self):
         if self.__ai_mode:
@@ -60,7 +61,9 @@ class Game:
         white = 255, 255, 255
         black = 0, 0, 0
         font = pygame.font.Font('freesansbold.ttf', 16)
-        stats = 'Player: {} (grid) | {} (pixels) | {} degrees (direction)'.format(to_grids(self.player.loc), self.player.loc, round(self.player.direction, 2))
+        stats = 'Player: {} (grid) | {} (pixels) | {} degrees (direction)'.format(self.player.loc.to_grid(),
+                                                                                  self.player.loc,
+                                                                                  round(self.player.direction, 2))
         text = font.render(stats, True, white, black)
         text_rect = text.get_rect()
         text_rect.center = (self.width - int(text_rect.width / 2) - 5, self.height - text_rect.height)
@@ -81,31 +84,32 @@ class Game:
             pygame.display.flip()
 
     def check_event_queue(self):
+        key_1 = key_2 = mouse_down = False
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                self._running = False
+                self.__running = False
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    self._running = False
+                    self.__running = False
                 if event.key == pygame.K_1:
-                    self.key_1 = True
+                    key_1 = True
                 if event.key == pygame.K_2:
-                    self.key_2 = True
+                    key_2 = True
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_1:
-                    self.key_1 = False
+                    key_1 = False
                 if event.key == pygame.K_2:
-                    self.key_2 = False
+                    key_2 = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                self.mouse_down = True
+                mouse_down = True
             elif event.type == pygame.MOUSEBUTTONUP:
-                self.mouse_down = False
+                mouse_down = False
                 self.last_grid = (0, 0)
-        if self.mouse_down and self.key_1:
+        if mouse_down and key_1:
             self.last_grid = self.world.create_wall(self.last_grid)
-        if self.mouse_down and self.key_2:
+        if mouse_down and key_2:
             x, y = pygame.mouse.get_pos()
-            self.world.goal_loc = to_grids(Loc(x, y))
+            self.world.goal_loc = PixelLoc(x, y).to_grid()
 
     def handle_keys(self, keys):
         if Keys.upright(keys):
@@ -126,10 +130,11 @@ class Game:
             self.world.move(self.player, Actions.D)
 
     def mainloop(self):
-        while self._running:
+        while self.__running:
             milliseconds = self.clock.tick(self.FPS)
             self.playtime += milliseconds / 1000.0
-            pygame.display.set_caption("James and Ashvin's (autistic) 'AI'  FPS: " + str(round(self.clock.get_fps(), 1)))
+            pygame.display.set_caption(
+                "James and Ashvin's (autistic) 'AI'  FPS: " + str(round(self.clock.get_fps(), 1)))
             self.check_event_queue()
             if not self.__ai_mode:
                 self.handle_keys(pygame.key.get_pressed())
