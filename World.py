@@ -5,7 +5,6 @@ from Grid import Grid
 from AI import AI
 from util import PixelLoc, GridLoc, Node, lerp, directions, actions, Queue, ppg, Colors
 from traceback import print_exception
-from Ray import Ray
 from Collider import Collider
 
 

@@ -45,4 +45,4 @@ class VisualSensors:
                 pygame.draw.rect(screen, Colors.GREEN, (path_p.x - util.ppg / 2, path_p.y - util.ppg / 2, util.ppg, util.ppg))
 
         for line in collision_lines:
-            pygame.draw.line(screen, Colors.GREEN, line[0], line[-1])
+            pygame.draw.line(screen, Colors.LIGHT_BLUE, line[0], line[-1])
