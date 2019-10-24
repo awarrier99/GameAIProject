@@ -4,6 +4,7 @@ import util
 
 from util import Loc, to_pixels
 
+
 class VisualSensors:
 
     def __init__(self, player, width, height):  # eventually take list of players
@@ -11,27 +12,16 @@ class VisualSensors:
         self.field_of_view = player.fov
         self.width = width
         self.height = height
-        self.ray_cast_angle = self.player.direction
-        self.ray_cast_increasing = True
 
     def update(self):
-        if self.ray_cast_angle > self.player.direction + self.field_of_view / 2:
-            self.ray_cast_increasing = False
-        if self.ray_cast_angle < self.player.direction - self.field_of_view / 2:
-            self.ray_cast_increasing = True
+        pass
 
-        # if self.ray_cast_increasing:
-        #     self.ray_cast_angle += 3
-        # else:
-        #     self.ray_cast_angle -= 3
-
-        # self.ray_cast_angle -= 5
-
-    def draw(self, screen, path, goal):
+    def draw(self, screen, path, goal, collision_lines):
         black = 0, 0, 0
         green = 0, 255, 0
         yellow = 255, 255, 102
         red = 255, 0, 0
+        light_blue = 0, 191, 255
 
         i = 0
         skip = 0
@@ -69,3 +59,5 @@ class VisualSensors:
             else:
                 pygame.draw.rect(screen, green, (path_p.x - util.ppg / 2, path_p.y - util.ppg / 2, util.ppg, util.ppg))
 
+        for line in collision_lines:
+            pygame.draw.line(screen, light_blue, line[0], line[-1])

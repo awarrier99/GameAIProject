@@ -6,36 +6,25 @@ from Workers import Workers
 
 class Ray:
 
-    def __init__(self, is_sweeping, cb, ecb):
-        self.is_sweeping = is_sweeping
-        self.angle_offset = 0
-        self.offset_inc = True
-        self.sweep_speed = 1
+    def __init__(self, cb, ecb):
         self._resolved = True
-        self.cb = cb
+        self.wcb = cb
         self.ecb = ecb
 
-    def get_collision(self, player, range_, sprites, walls):
-        zone = player.rect.inflate(range_, range_)
-        collidables = [sprite.rect for sprite in sprites]
-        args = (player.loc, zone, player.direction, range_, collidables, walls)
-        Workers.delegate(in_sight, args, callback=self.cb, error_callback=self.ecb)
-
     def draw(self, loc, dir, screen):
-        yellow = 255, 255, 102
-        l3_p2 = loc.x + 700 * math.cos(math.radians(self.angle_offset + dir)), loc.y + 700 * math.sin(
-            math.radians(self.angle_offset + dir))
-        pygame.draw.line(screen, yellow, (loc.x, loc.y), l3_p2)
+        pass
 
     def update(self, player):
+        pass
 
-        if self.angle_offset > player.fov / 2:
-            self.offset_inc = False
-        if self.angle_offset < -player.fov / 2:
-            self.offset_inc = True
+    def cb(self, result):
+        self._resolved = True
+        self.wcb(result)
 
-        if self.is_sweeping:
-            if self.offset_inc:
-                self.angle_offset += self.sweep_speed
-            else:
-                self.angle_offset -= self.sweep_speed
+    def get_collision(self, player, sprites, walls):
+        if self._resolved:
+            self._resolved = False
+            collidables = [sprite.rect for sprite in sprites]
+            args = (player.loc, player.fov, player.direction, collidables, walls)
+            Workers.delegate(in_sight, args, callback=self.cb, error_callback=self.ecb)
+

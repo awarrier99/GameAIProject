@@ -232,61 +232,68 @@ def lerp(t, times, start, end):
     return Loc(dt * (end.x - start.x) + start.x, dt * (end.y - start.y) + start.y)
 
 
-def in_sight(player_loc, zone, direction, range_, collidables, walls):
-    line_of_sight = get_line(player_loc, direction, range_, 5)
-    collisions = zone.collidelistall(collidables)
-    for x in range(1, len(line_of_sight)):
-        loc = to_grids(Loc(*line_of_sight[x]))
-        if (loc.x, loc.y) in walls:
-            break
-        for ind in collisions:
-            if collidables[ind].collidepoint(line_of_sight[x]):
-                return collidables[ind], ind
-    return None
+def in_sight(loc, fov, direction, collidables, walls):
+    in_fov = []
+    visible = []
+    for collidable in collidables:
+        obj_direction = None
+        points = [collidable.center, collidable.topleft, collidable.bottomleft, collidable.topright, collidable.bottomright]
+        for pt in points:
+            cur_direction = get_direction(loc, Loc(*pt))
+            if pt == collidable.center:
+                obj_direction = cur_direction
+
+            angle = abs(direction - cur_direction)
+            if angle <= (fov / 2.0) or angle >= (360 - (fov / 2.0)):
+                in_fov.append((collidable, obj_direction))
+                break
+
+    for collidable, obj_direction in in_fov:
+        col_loc = Loc(*collidable.center)
+        if loc == col_loc:
+            visible.append((collidable, create_line(loc, loc, 1)))
+            continue
+        collision_line = create_line(loc, col_loc, 1)
+        blocked = False
+        for x in range(1, len(collision_line)):
+            grid_loc = to_grids(Loc(*collision_line[x]))
+            if (grid_loc.x, grid_loc.y) in walls:
+                blocked = True
+                break
+            for c, _ in in_fov:
+                if (not c == collidable) and c.collidepoint(collision_line[x]):
+                    blocked = True
+            if blocked:
+                break
+        if not blocked:
+            visible.append((collidable, collision_line))
+
+    return visible
 
 
-def get_line(start, direction, range_, step):
-    # Setup initial conditions
-    x1, y1 = start.x, start.y
-    x2 = int(x1 + range_ * math.cos(math.radians(direction)))
-    y2 = int(y1 + range_ * math.sin(math.radians(direction)))
-    dx = x2 - x1
-    dy = y2 - y1
+def get_direction(start, end):
+    dx = end.x - start.x
+    dy = end.y - start.y
 
-    # Determine how steep the line is
-    is_steep = abs(dy) > abs(dx)
-    # Rotate line
-    if is_steep:
-        x1, y1 = y1, x1
-        x2, y2 = y2, x2
+    direction = math.degrees(math.atan2(-dy, -dx)) + 180
+    return direction
 
-    # Swap start and end points if necessary and store swap state
-    swapped = False
-    if x1 > x2:
-        x1, x2 = x2, x1
-        y1, y2 = y2, y1
-        swapped = True
 
-    # Recalculate differentials
-    dx = x2 - x1
-    dy = y2 - y1
-
-    # Calculate error
-    error = int(dx / 2.0)
-    ystep = 1 if y1 < y2 else -1
-
-    # Iterate over bounding box generating points between start and end
-    y = y1
+def create_line(start, end, step):
     points = []
-    for x in range(x1, x2 + step):
-        coord = (y, x) if is_steep else (x, y)
-        points.append(coord)
-        error -= abs(dy)
-        if error < 0:
-            y += ystep
-            error += dx
+    if start == end:
+        return [(start.x, start.y)]
+    if end.x < start.x:
+        t = end
+        end = start
+        start = t
+    if end.x == start.x:
+        ys = range(min(start.y, end.y), max(start.y, end.y))
+        xs = [start.x for _ in ys]
+        return list(zip(xs, ys))
+    m = (end.y - start.y) / (end.x - start.x)
+    f = lambda x: (m * (x - start.x)) + start.y
+    for x in range(start.x, end.x, step):
+        points.append((x, f(x)))
 
-    # Reverse the list if the coordinates were swapped
-    if swapped:
-        points.reverse()
     return points
