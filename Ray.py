@@ -16,11 +16,10 @@ class Ray:
         self.ecb = ecb
 
     def get_collision(self, player, range_, sprites, walls):
-        if self._resolved:
-            zone = player.rect.inflate(range_, range_)
-            collidables = [sprite.rect for sprite in sprites]
-            args = (player.loc, zone, player.direction, range_, collidables, walls)
-            Workers.delegate(in_sight, args, callback=self.cb, error_callback=self.ecb)
+        zone = player.rect.inflate(range_, range_)
+        collidables = [sprite.rect for sprite in sprites]
+        args = (player.loc, zone, player.direction, range_, collidables, walls)
+        Workers.delegate(in_sight, args, callback=self.cb, error_callback=self.ecb)
 
     def draw(self, loc, dir, screen):
         yellow = 255, 255, 102
@@ -30,9 +29,9 @@ class Ray:
 
     def update(self, player):
 
-        if self.angle_offset > player.fov / 2 - self.sweep_speed:
+        if self.angle_offset > player.fov / 2:
             self.offset_inc = False
-        if self.angle_offset < -player.fov / 2 + self.sweep_speed:
+        if self.angle_offset < -player.fov / 2:
             self.offset_inc = True
 
         if self.is_sweeping:

@@ -2,7 +2,7 @@ from multiprocessing import Pool
 
 
 class Workers:
-    _pool = Pool(2)
+    _pool = Pool()
 
     @staticmethod
     def delegate(task, args, callback, error_callback):

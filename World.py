@@ -32,7 +32,7 @@ class World:
         self.wall_thickness = 6
 
         self.ai = AI(self.grid, self.ai_callback, World.task_error_callback)
-        self.rays = [Ray(True, self.ray_callback, self.task_error_callback) for _ in range(4)]
+        self.rays = [Ray(True, self.ray_callback, self.task_error_callback) for _ in range(5)]
 
         self.collider1 = Collider(to_pixels(Loc(5, 5)))
         self.collider2 = Collider(to_pixels(Loc(8, 5)))
@@ -140,7 +140,8 @@ class World:
 
     def draw(self, screen, background):
         for ray in self.rays:
-            ray.draw(self.player.loc, self.player.direction, screen)
+            pass
+            # ray.draw(self.player.loc, self.player.direction, screen)
         black = 0, 0, 0
 
         if self._enable_dirty_rects:
