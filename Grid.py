@@ -8,8 +8,16 @@ class Grid:
         self.walls = walls
         self._last_walls = walls.copy()
         for wall in self.walls:
-            self._grid[wall.x][wall.y] = 'W'
+            self[wall] = 'W'
         self.__first = None
+
+    def add_wall(self, loc):
+        self.walls.append(loc)
+        self[loc] = 'W'
+
+    def remove_wall(self, loc):
+        self.walls.remove(loc)
+        self[loc] = 'N'
 
     def neighbors(self, node):
         if not node:
@@ -18,12 +26,12 @@ class Grid:
         node_list = []
 
         for idx, dr in enumerate(directions):
-            loc = GridLoc(node.loc.x + dr[0], node.loc.y + dr[1])
+            loc = node.loc.add(dr)
             if self.is_valid(loc):
-                n = self[loc.x][loc.y]
+                n = self[loc]
                 if not n.is_wall():
                     n.action = actions[idx]
-                    if dr[0] and dr[1]:
+                    if dr.x and dr.y:
                         n.cost = 2 ** 0.5
                     else:
                         n.cost = 1
@@ -32,10 +40,10 @@ class Grid:
         return node_list
 
     def is_blocked(self, node, direction):
-        if direction[0] == 0 or direction[1] == 0:
+        if not (direction.x and direction.y):
             return False
-        adjacent1 = self[node.loc.x + direction[0]][node.loc.y]
-        adjacent2 = self[node.loc.x][node.loc.y + direction[1]]
+        adjacent1 = self[node.loc.add(GridLoc(direction.x, 0))]
+        adjacent2 = self[node.loc.add(GridLoc(0, direction.y))]
         return adjacent1.is_wall() and adjacent2.is_wall()
 
     def is_valid(self, loc):
@@ -48,8 +56,17 @@ class Grid:
 
         return True
 
-    def __getitem__(self, idx):
-        return GridCol(idx, self)
+    def __getitem__(self, loc):
+        if not self.is_valid(loc):
+            return Wall(GridLoc(-1, -1))
+
+        if self._grid[loc.x][loc.y] == 'W':
+            return Wall(loc)
+
+        return Node(loc)
+
+    def __setitem__(self, loc, value):
+        self._grid[loc.x][loc.y] = value
 
     def __str__(self):
         string = ''
@@ -62,20 +79,3 @@ class Grid:
 
         return string
 
-
-class GridCol:
-    def __init__(self, col_num, grid):
-        self._col_num = col_num
-        self.grid = grid
-
-    def __getitem__(self, idx):
-        if not self.grid.is_valid(GridLoc(self._col_num, idx)):
-            return Wall(GridLoc(-1, -1))
-
-        if self.grid._grid[self._col_num][idx] == 'W':
-            return Wall(GridLoc(self._col_num, idx))
-
-        return Node(GridLoc(self._col_num, idx))
-
-    def __setitem__(self, idx, value):
-        self.grid._grid[self._col_num][idx] = value

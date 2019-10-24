@@ -81,22 +81,37 @@ class Loc:
     def __init__(self, x, y):
         self.__x = int(x)
         self.__y = int(y)
-        self.__type = None
+        self._type = None
+
+    def add(self, loc):
+        x = self.x + loc.x
+        y = self.y + loc.y
+        if self.is_grid():
+            return GridLoc(x, y)
+        elif self.is_pixel():
+            return PixelLoc(x, y)
+        else:
+            return Loc(x, y)
+
+    def as_tuple(self):
+        return self.x, self.y
+
+    @classmethod
+    def from_tuple(cls, t):
+        return cls(*t)
 
     def is_grid(self):
-        return self.__type == 'Grid'
+        return self._type == 'Grid'
 
     def is_pixel(self):
-        return self.__type == 'Pixel'
+        return self._type == 'Pixel'
 
     def __str__(self):
-        if self.__type:
-            return '{} Location ({}, {})'.format(self.__type, self.x, self.y)
         return '({}, {})'.format(self.x, self.y)
 
     def __repr__(self):
-        if self.__type:
-            return '{}Loc({}, {})'.format(self.__type, self.x, self.y)
+        if self._type:
+            return '{}Loc({}, {})'.format(self._type, self.x, self.y)
         return 'Loc({}, {})'.format(self.x, self.y)
 
     def __eq__(self, other):
@@ -120,7 +135,7 @@ class Loc:
 class GridLoc(Loc):
     def __init__(self, x, y):
         super().__init__(x, y)
-        self.__type = 'Grid'
+        self._type = 'Grid'
 
     def to_pixel(self):
         return PixelLoc((self.x * ppg) + int(ppg / 2) + 1, (self.y * ppg) + int(ppg / 2) + 1)
@@ -129,10 +144,13 @@ class GridLoc(Loc):
 class PixelLoc(Loc):
     def __init__(self, x, y):
         super().__init__(x, y)
-        self.__type = 'Pixel'
+        self._type = 'Pixel'
 
     def to_grid(self):
         return GridLoc(int(self.x / ppg), int(self.y / ppg))
+
+
+directions = [GridLoc(*d) for d in directions]
 
 
 class Node:
@@ -175,6 +193,10 @@ class Queue:
     def __init__(self):
         self.__q = queue.Queue()
 
+    def clear(self):
+        while not self.empty():
+            self.pop()
+
     def empty(self):
         return self.__q.empty()
 
@@ -182,7 +204,7 @@ class Queue:
         self.__q.put(item)
 
     def pop(self):
-        if not self.__q.empty():
+        if not self.empty():
             return self.__q.get()
         return None
 
@@ -260,36 +282,34 @@ def lerp(t, times, start, end):
     return PixelLoc(dt * (end.x - start.x) + start.x, dt * (end.y - start.y) + start.y)
 
 
-def in_sight(loc, fov, direction, collidables, walls):
+def in_sight(obj_loc, obj_fov, obj_direction, collidables, walls):
     in_fov = []
     visible = []
     for collidable in collidables:
-        obj_direction = None
         points = [collidable.center, collidable.topleft, collidable.bottomleft, collidable.topright, collidable.bottomright]
-        for pt in points:
-            cur_direction = get_direction(loc, Loc(*pt))
-            if pt == collidable.center:
-                obj_direction = cur_direction
 
-            angle = abs(direction - cur_direction)
-            if angle <= (fov / 2.0) or angle >= (360 - (fov / 2.0)):
-                in_fov.append((collidable, obj_direction))
+        for pt in points:
+            cur_direction = get_direction(obj_loc, PixelLoc(*pt))
+
+            angle = abs(obj_direction - cur_direction)
+            if angle <= (obj_fov / 2.0) or angle >= (360 - (obj_fov / 2.0)):
+                in_fov.append(collidable)
                 break
 
-    for collidable, obj_direction in in_fov:
-        col_loc = Loc(*collidable.center)
-        if loc == col_loc:
-            visible.append((collidable, create_line(loc, loc, 1)))
+    for collidable in in_fov:
+        col_loc = PixelLoc(*collidable.center)
+        if obj_loc == col_loc:
+            visible.append((collidable, create_line(obj_loc, obj_loc, 1)))
             continue
-        collision_line = create_line(loc, col_loc, 1)
+        collision_line = create_line(obj_loc, col_loc, 1)
         blocked = False
-        for x in range(1, len(collision_line)):
-            grid_loc = PixelLoc(*collision_line[x]).to_grid()
-            if (grid_loc.x, grid_loc.y) in walls:
+        for i in range(1, len(collision_line)):
+            grid_loc = PixelLoc(*collision_line[i]).to_grid()
+            if grid_loc in walls:
                 blocked = True
                 break
-            for c, _ in in_fov:
-                if (not c == collidable) and c.collidepoint(collision_line[x]):
+            for c in in_fov:
+                if (not c == collidable) and c.collidepoint(collision_line[i]):
                     blocked = True
             if blocked:
                 break
@@ -310,7 +330,7 @@ def get_direction(start, end):
 def create_line(start, end, step):
     points = []
     if start == end:
-        return [(start.x, start.y)]
+        return [start.as_tuple()]
     if end.x < start.x:
         t = end
         end = start

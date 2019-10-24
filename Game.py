@@ -23,7 +23,9 @@ class Game:
         self.clock = pygame.time.Clock()
         self.playtime = 0
         self.visual_sensors = None
-        self.last_grid = (0, 0)
+        self.last_grid = GridLoc(-1, -1)
+        self.input_map = {}
+        self.input_debounce = 0
 
     def init_config(self, cfg):
         self.size = self.width, self.height = cfg['width'] or 1085, cfg['height'] or 735
@@ -42,28 +44,30 @@ class Game:
         self.screen = pygame.display.set_mode(self.size, pygame.HWACCEL | pygame.DOUBLEBUF)
 
         if self._enable_visuals:
-            self.visual_sensors = VisualSensors(self.player, *self.size)
-        pygame.display.set_caption("James and Ashvin's (autistic) 'AI'")
+            self.visual_sensors = [VisualSensors(self.player, *self.size)]
+        pygame.display.set_caption('James and Ashvin\'s Game \'AI\'')
+
+        self.background = pygame.Surface(self.screen.get_size())
+        self.background.fill((255, 155, 155))
+        self.background = self.background.convert()
 
         if self._enable_dirty_rects:
             self.all_sprites = pygame.sprite.LayeredDirty(self.player)
             self.all_sprites.clear(self.screen, self.background)
         else:
-            self.all_sprites = pygame.sprite.Group(self.player, *self.world.colliders)
+            self.all_sprites = pygame.sprite.Group(*self.world.colliders, self.player)
 
-        self.background = pygame.Surface(self.screen.get_size())
-        self.background.fill((255, 155, 155))
-        self.background = self.background.convert()
         self.screen.blit(self.background, (0, 0))
 
     def draw_stats(self):
         font = pygame.font.Font('freesansbold.ttf', 16)
-        stats = 'Player: {} (grid) | {} (pixels) | {} degrees (direction)'.format(self.player.loc.to_grid(),
-                                                                                  self.player.loc,
-                                                                                  round(self.player.direction, 2))
+        actor = 'AI' if self.__ai_mode else 'Player'
+        stat_str = '{}: {} (grid) | {} (pixels) | {} degrees (direction)'
+        stats = stat_str.format(actor, self.player.loc.to_grid(), self.player.loc, round(self.player.direction, 2))
         text = font.render(stats, True, Colors.WHITE, Colors.BLACK)
         text_rect = text.get_rect()
-        text_rect.center = (self.width - int(text_rect.width / 2) - 5, self.height - text_rect.height)
+        text_rect.center = (self.width * 0.7, self.height * 0.98)
+        text_rect.width, text_rect.height = 750, 20
         self.screen.blit(text, text_rect)
 
     def redraw(self):
@@ -71,8 +75,10 @@ class Game:
             self.screen.blit(self.background, (0, 0))
         wall_rects, old_wall_rects = self.world.draw(self.screen, self.background)
         dirty_rects = self.all_sprites.draw(self.screen)
+
         if self._enable_visuals:
-            self.visual_sensors.draw(self.screen, self.world.path, self.world.goal_loc, self.world.collision_lines)
+            for vs in self.visual_sensors:
+                vs.draw(self.screen, self.world.draw_path, self.world.goal_loc, self.world.collision_lines)
         if self._enable_stats:
             self.draw_stats()
         if self._enable_dirty_rects:
@@ -80,33 +86,51 @@ class Game:
         else:
             pygame.display.flip()
 
+    def input(self, in_):
+        if in_ in self.input_map:
+            return self.input_map[in_]
+        return False
+
+    def check_inputs(self):
+        if self.input_debounce > 0:
+            self.input_debounce -= 1
+        if self.input('mouse_down') and self.input(pygame.K_1):
+            self.last_grid = self.world.create_wall(self.last_grid)
+        if self.input('mouse_down') and self.input(pygame.K_2):
+            x, y = pygame.mouse.get_pos()
+            self.world.set_goal(x, y)
+        if self.input(pygame.K_F1) and not self.input_debounce:
+            self._enable_stats = not self._enable_stats
+            self.input_debounce = 10
+        if self.input(pygame.K_F2) and not self.input_debounce:
+            self._enable_visuals = not self._enable_visuals
+            self.input_debounce = 10
+        if self.input(pygame.K_F3) and not self.input_debounce:
+            self.__ai_mode = not self.__ai_mode
+            if self.__ai_mode:
+                self.__pathfinding = True
+            self.world.toggle_ai()
+            self.input_debounce = 10
+
     def check_event_queue(self):
-        key_1 = key_2 = mouse_down = False
+        ins = self.input_map
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.__running = False
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     self.__running = False
-                if event.key == pygame.K_1:
-                    key_1 = True
-                if event.key == pygame.K_2:
-                    key_2 = True
+                else:
+                    ins[event.key] = True
             elif event.type == pygame.KEYUP:
-                if event.key == pygame.K_1:
-                    key_1 = False
-                if event.key == pygame.K_2:
-                    key_2 = False
+                ins[event.key] = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                mouse_down = True
+                ins['mouse_down'] = True
             elif event.type == pygame.MOUSEBUTTONUP:
-                mouse_down = False
-                self.last_grid = (0, 0)
-        if mouse_down and key_1:
-            self.last_grid = self.world.create_wall(self.last_grid)
-        if mouse_down and key_2:
-            x, y = pygame.mouse.get_pos()
-            self.world.goal_loc = PixelLoc(x, y).to_grid()
+                ins['mouse_down'] = False
+                self.last_grid = GridLoc(-1, -1)
+
+        self.check_inputs()
 
     def handle_keys(self, keys):
         if Keys.upright(keys):
@@ -130,14 +154,20 @@ class Game:
         while self.__running:
             milliseconds = self.clock.tick(self.FPS)
             self.playtime += milliseconds / 1000.0
-            pygame.display.set_caption(
-                "James and Ashvin's (autistic) 'AI'  FPS: " + str(round(self.clock.get_fps(), 1)))
+
+            caption = 'James and Ashvin\'s Game \'AI\'  FPS: {}'.format(round(self.clock.get_fps(), 1))
+            if self.__ai_mode:
+                caption += ' | AI Mode'
+            pygame.display.set_caption(caption)
+
             self.check_event_queue()
             if not self.__ai_mode:
                 self.handle_keys(pygame.key.get_pressed())
+
             self.all_sprites.update()
             if self._enable_visuals:
-                self.visual_sensors.update()
+                for vs in self.visual_sensors:
+                    vs.update()
             self.world.update()
             self.redraw()
 
@@ -151,21 +181,3 @@ class Game:
         self.setup()
         self.mainloop()
         self.cleanup()
-
-
-if __name__ == "__main__":
-    parser = ArgumentParser()
-    parser.add_argument('-nv', '--no-visuals', action='store_true', help='whether to show visual sensors for debugging')
-    parser.add_argument('-ns', '--no-stats', action='store_true', help='whether to show stats in screen bottom right')
-    parser.add_argument('-w', '--width', type=int, help='width of the game screen')
-    parser.add_argument('-he', '--height', type=int, help='height of the game screen')
-    parser.add_argument('-p', '--util.ppg', type=int, help='pixels per grid position')
-    parser.add_argument('-f', '--fps', type=int, help='frames per second')
-    parser.add_argument('-m', '--move-frames', type=int, help='number of frames to move for')
-    parser.add_argument('-np', '--no-pathfinding', action='store_true', help='whether to run pathfinding')
-    parser.add_argument('-a', '--ai', action='store_true', help='whether to run in AI mode')
-    parser.add_argument('-d', '--dirty-rects', action='store_true', help='whether to use dirty rect rendering')
-    config = vars(parser.parse_args())
-    util.ppg = config['util.ppg'] or 35
-    game = Game(config)
-    game.run()

@@ -26,10 +26,11 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, (50, 33))
         self.rect = self.image.get_rect()
         self.loc = location
-        self.rect.center = (self.loc.x, self.loc.y)
+        self.last_loc = location
+        self.rect.center = self.loc.as_tuple()
         self.dirty = 0
         self.orig_image = self.image
-        self.pos = Vector2(self.loc.x, self.loc.y)  # The original center position/pivot point.
+        self.pos = Vector2(*self.loc.as_tuple())  # The original center position/pivot point.
         self.offset = Vector2(9.346, -2.72)  # We shift the sprite 50 px to the right.
         self.direction = 0  # degrees: 0º is facing right
         self._last_dir = 0
@@ -52,7 +53,7 @@ class Player(pygame.sprite.Sprite):
         # Rotate the offset vector.
         offset_rotated = self.offset.rotate(self.direction)
         # Create a new rect with the center of the sprite + the offset.
-        self.rect = self.image.get_rect(center=(self.loc.x, self.loc.y) + offset_rotated)
+        self.rect = self.image.get_rect(center=self.loc.as_tuple() + offset_rotated)
 
     def scan(self, sprites, walls):
         if self._resolved:
@@ -62,8 +63,8 @@ class Player(pygame.sprite.Sprite):
             Workers.delegate(in_sight, args, callback=self.cb, error_callback=self.ecb)
 
     def update(self):
-        self.rect.x = self.loc.x
-        self.rect.y = self.loc.y
+        self.last_loc = PixelLoc(self.rect.x, self.rect.y)
+        self.rect.x, self.rect.y = self.loc.as_tuple()
 
         x, y = pygame.mouse.get_pos()
 

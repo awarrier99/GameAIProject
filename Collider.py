@@ -2,7 +2,6 @@ import pygame
 
 
 class Collider(pygame.sprite.Sprite):
-
     def __init__(self, loc):
         pygame.sprite.Sprite.__init__(self)
         blue = 0, 0, 128
@@ -10,7 +9,7 @@ class Collider(pygame.sprite.Sprite):
         self.image.fill(blue)
         self.rect = self.image.get_rect()
         self.rect = self.image.get_rect()
-        self.rect.center = (loc.x, loc.y)
+        self.rect.center = loc.as_tuple()
 
     def update(self):
         pass
