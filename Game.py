@@ -96,6 +96,8 @@ class Game:
             self.input_debounce -= 1
         if self.input('mouse_down') and self.input(pygame.K_1):
             self.last_grid = self.world.create_wall(self.last_grid)
+        if self.input('mouse_down'):
+            self.player.shoot()
         if self.input('mouse_down') and self.input(pygame.K_2):
             x, y = pygame.mouse.get_pos()
             self.world.set_goal(x, y)

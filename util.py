@@ -346,3 +346,7 @@ def create_line(start, end, step):
         points.append((x, f(x)))
 
     return points
+
+
+def line_length(start, end):
+    return math.sqrt((end[0] - start[0]) ** 2 + (end[1] - start[1]) ** 2)

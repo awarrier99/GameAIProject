@@ -3,7 +3,7 @@ import util
 
 from Grid import Grid
 from AI import AI
-from util import PixelLoc, GridLoc, Node, lerp, directions, actions, Queue, ppg, Colors
+from util import PixelLoc, GridLoc, Node, lerp, directions, actions, Queue, Colors
 from traceback import print_exception
 from Collider import Collider
 
@@ -56,7 +56,8 @@ class World:
         # pass
         self.collision_lines = []
         for collidable, collision_line in results:
-            self.collision_lines.append(collision_line)
+            if util.line_length(collision_line[0], collision_line[len(collision_line) - 1]) < 700:
+                self.collision_lines.append(collision_line)
 
     @staticmethod
     def task_error_callback(err):
@@ -217,4 +218,6 @@ class World:
         else:
             for rect in self.wall_rects:
                 screen.fill(Colors.BLACK, rect)
+        self.player.draw(screen)
         return self.new_wall_rects, self.old_wall_rects
+

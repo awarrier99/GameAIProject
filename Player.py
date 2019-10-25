@@ -2,7 +2,7 @@ import pygame
 import math
 
 from pygame.math import Vector2
-from util import PixelLoc, get_direction, in_sight
+from util import PixelLoc, get_direction, in_sight, Colors
 from Workers import Workers
 
 
@@ -30,7 +30,6 @@ class Player(pygame.sprite.Sprite):
         self.rect.center = self.loc.as_tuple()
         self.dirty = 0
         self.orig_image = self.image
-        self.pos = Vector2(*self.loc.as_tuple())  # The original center position/pivot point.
         self.offset = Vector2(9.346, -2.72)  # We shift the sprite 50 px to the right.
         self.direction = 0  # degrees: 0º is facing right
         self._last_dir = 0
@@ -39,20 +38,24 @@ class Player(pygame.sprite.Sprite):
         self._resolved = True
         self.wcb = None
         self.ecb = None
+        self.sensor_range = 150
+        self.sensor_circle = pygame.Rect(0, 0, self.sensor_range, self.sensor_range)
+        self.sensor_reset_time = 0
+        self.shoot_delay = 25
 
     def cb(self, result):
         self._resolved = True
         self.wcb(result)
 
-    def shoot(self, direction):
-        pass
-        #  shoot bullet
+    def shoot(self):
+        if self.shoot_delay < 0:
+            self.sensor_range = 400
+            self.sensor_reset_time = 10
+            self.shoot_delay = 15
 
     def rotate(self):
         self.image = pygame.transform.rotozoom(self.orig_image, -self.direction, 1)
-        # Rotate the offset vector.
         offset_rotated = self.offset.rotate(self.direction)
-        # Create a new rect with the center of the sprite + the offset.
         self.rect = self.image.get_rect(center=self.loc.as_tuple() + offset_rotated)
 
     def scan(self, sprites, walls):
@@ -62,13 +65,20 @@ class Player(pygame.sprite.Sprite):
             args = (self.loc, self.fov, self.direction, collidables, walls)
             Workers.delegate(in_sight, args, callback=self.cb, error_callback=self.ecb)
 
+
     def update(self):
+        self.sensor_reset_time -= 1
+        self.shoot_delay -= 1
+        if self.sensor_reset_time < 0:
+            self.sensor_range = 150
         self.last_loc = PixelLoc(self.rect.x, self.rect.y)
         self.rect.x, self.rect.y = self.loc.as_tuple()
-
+        self.sensor_circle.center = self.loc.as_tuple()
         x, y = pygame.mouse.get_pos()
 
         self.direction = get_direction(self.loc, PixelLoc(x, y))
         self.dirty = 1
         self.rotate()
 
+    def draw(self, screen):
+        pygame.draw.rect(screen, Colors.WHITE, (self.loc.x - self.sensor_range, self.loc.y - self.sensor_range, self.sensor_range * 2, self.sensor_range * 2), 1)
