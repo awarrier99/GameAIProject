@@ -1,33 +1,29 @@
 import pygame
-import util
+import settings
 
 from Grid import Grid
 from AI import AI
-from util import PixelLoc, GridLoc, Node, lerp, directions, actions, Queue, Colors
+from util import PixelLoc, GridLoc, Node, lerp, directions, actions, Queue, Colors, line_length
 from traceback import print_exception
 from Collider import Collider
 
 
 class World:
-    def __init__(self, player, size, move_frames, ai_mode, pathfinding, enable_dirty_rects):
-        self.size = self.width, self.height = size
-        self.grid = Grid(int(self.width / util.ppg), int(self.height / util.ppg))
+    def __init__(self, player):
+        self.grid = Grid(int(settings.width / settings.ppg), int(settings.height / settings.ppg))
         self.actions = []
         self.path = []
         self.draw_path = []
-        self.__ai_mode = ai_mode
-        self.__pathfinding = pathfinding
-        self._ai_moving = False
+        self.__ai_moving = False
         self._recompute = False
-        self.goal_loc = None if self.__ai_mode else GridLoc(10, 10)
+        self.goal_loc = None if settings.ai_mode else GridLoc(10, 10)
         self.last_goal = self.goal_loc
-        self.frame_meta = {'obj': None, 'frame': 0, 'start': None, 'end': None, 'move_frames': move_frames,
-                           'frames': range(move_frames)}
+        self.frame_meta = {'obj': None, 'frame': 0, 'start': None, 'end': None, 'move_frames': settings.move_frames,
+                           'frames': range(settings.move_frames)}
         self.player = player
         self.player.wcb = self.scan_callback
         self.player.ecb = World.task_error_callback
         self.moves = Queue()
-        self._enable_dirty_rects = enable_dirty_rects
         self.wall_rects = []
         self.new_wall_rects = []
         self.old_wall_rects = []
@@ -46,8 +42,8 @@ class World:
             self.actions.append(r[0])
             self.path.append(r[1])
         self.draw_path = self.path.copy()
-        if self.__ai_mode and result:
-            self._ai_moving = True
+        if settings.ai_mode and result:
+            self.__ai_moving = True
             self.move(self.player, self.actions[0])
             for move in self.actions[1:]:
                 self.moves.push((self.player, move))
@@ -56,7 +52,7 @@ class World:
         # pass
         self.collision_lines = []
         for collidable, collision_line in results:
-            if util.line_length(collision_line[0], collision_line[len(collision_line) - 1]) < 700:
+            if line_length(collision_line[0], collision_line[len(collision_line) - 1]) < 700:
                 self.collision_lines.append(collision_line)
 
     @staticmethod
@@ -82,10 +78,10 @@ class World:
 
         find_path = False
         moved = (not self.player.loc == self.player.last_loc)
-        if self.__ai_mode:
-            if self.goal_loc and (not self._ai_moving or recompute):
+        if settings.ai_mode:
+            if self.goal_loc and (not self.__ai_moving or recompute):
                 find_path = True
-        elif self.__pathfinding and self.goal_loc and (not self.path or recompute or moved):
+        elif settings.pathfinding and self.goal_loc and (not self.path or recompute or moved):
             find_path = True
         if find_path:
             self.ai.pathfind(Node(self.player.loc.to_grid()), Node(self.goal_loc))
@@ -107,12 +103,12 @@ class World:
         if frame == len(frames):
             self.end_move()
 
-            if self._ai_moving:
+            if self.__ai_moving:
                 self.draw_path = self.draw_path[1:] if len(self.draw_path) > 1 else []
             if not self.moves.empty():
                 self.move(*self.moves.pop())
-            elif self._ai_moving:
-                self._ai_moving = False
+            elif self.__ai_moving:
+                self.__ai_moving = False
         elif obj:
             obj_loc = lerp(frame, frames, start, end)
             obj.loc = obj_loc
@@ -137,7 +133,7 @@ class World:
                 self.frame_meta['obj'] = obj_
                 self.frame_meta['start'] = obj_.loc
                 self.frame_meta['end'] = end_loc.to_pixel()
-            elif self.__ai_mode:
+            elif settings.ai_mode:
                 self._recompute = True
             else:
                 loc1 = GridLoc(loc.x, end_loc.y)
@@ -158,14 +154,16 @@ class World:
             self.moves.push((obj_, action))
 
     def toggle_ai(self):
-        self.__ai_mode = not self.__ai_mode
         self.goal_loc = None
         self.draw_path = []
         self.path = []
-        if self.__ai_mode:
-            self.__pathfinding = True
-        else:
+        if not settings.ai_mode:
             self.end_move(flush_queue=True, finish_interpolation=True)
+
+    def toggle_pathfinding(self):
+        self.goal_loc = None
+        self.draw_path = []
+        self.path = []
 
     def create_wall(self, last_grid):
         mouse_loc = PixelLoc(*pygame.mouse.get_pos())
@@ -183,17 +181,17 @@ class World:
             wall_p = wall_center.to_pixel()
 
             if self.grid[wall_center.add(GridLoc(0, -1))].is_wall():  # if there is a wall above this wall
-                wall_rects.append(pygame.Rect(wall_p.x - self.wall_thickness / 2, wall_p.y - util.ppg / 2,
-                                              self.wall_thickness, util.ppg / 2 + 1))
+                wall_rects.append(pygame.Rect(wall_p.x - self.wall_thickness / 2, wall_p.y - settings.ppg / 2,
+                                              self.wall_thickness, settings.ppg / 2 + 1))
             if self.grid[wall_center.add(GridLoc(0, 1))].is_wall():  # if there is a wall below this wall
                 wall_rects.append(pygame.Rect(wall_p.x - self.wall_thickness / 2, wall_p.y +
-                                              self.wall_thickness / 2, self.wall_thickness, util.ppg / 2 + 1))
+                                              self.wall_thickness / 2, self.wall_thickness, settings.ppg / 2 + 1))
             if self.grid[wall_center.add(GridLoc(-1, 0))].is_wall():  # if there is to the left of this wall
-                wall_rects.append(pygame.Rect(wall_p.x - util.ppg / 2, wall_p.y - self.wall_thickness / 2,
-                                              util.ppg / 2 + 1, self.wall_thickness))
+                wall_rects.append(pygame.Rect(wall_p.x - settings.ppg / 2, wall_p.y - self.wall_thickness / 2,
+                                              settings.ppg / 2 + 1, self.wall_thickness))
             if self.grid[wall_center.add(GridLoc(1, 0))].is_wall():  # if there is to the left of this wall
                 wall_rects.append(pygame.Rect(wall_p.x + self.wall_thickness / 2, wall_p.y -
-                                              self.wall_thickness / 2, util.ppg / 2 + 1, self.wall_thickness))
+                                              self.wall_thickness / 2, settings.ppg / 2 + 1, self.wall_thickness))
 
             wall_rects.append(pygame.Rect(wall_p.x - self.wall_thickness / 2, wall_p.y - self.wall_thickness / 2,
                                           self.wall_thickness, self.wall_thickness))
@@ -201,7 +199,7 @@ class World:
         return wall_rects
 
     def draw(self, screen, background):
-        if self._enable_dirty_rects:
+        if settings.dirty_rects:
             new_walls = [w for w in self.grid.walls if w not in self.grid._last_walls]
             old_walls = [w for w in self.grid._last_walls if w not in self.grid.walls]
             self.new_wall_rects = self.generate_wall_rects(new_walls)
@@ -210,7 +208,7 @@ class World:
         else:
             self.wall_rects = self.generate_wall_rects(self.grid.walls)
 
-        if self._enable_dirty_rects:
+        if settings.dirty_rects:
             for rect in self.new_wall_rects:
                 screen.fill(Colors.BLACK, rect)
             for rect in self.old_wall_rects:

@@ -1,11 +1,11 @@
 import pygame
 import queue
 import math
+import settings
 
 
 directions = [(-1, -1), (0, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (0, 1), (1, 1)]
 actions = ['Up Left', 'Up', 'Up Right', 'Left', 'Right', 'Down Left', 'Down', 'Down Right']
-ppg = 35
 
 
 class Actions:
@@ -139,7 +139,8 @@ class GridLoc(Loc):
         self._type = 'Grid'
 
     def to_pixel(self):
-        return PixelLoc((self.x * ppg) + int(ppg / 2) + 1, (self.y * ppg) + int(ppg / 2) + 1)
+        return PixelLoc((self.x * settings.ppg) + int(settings.ppg / 2) + 1,
+                        (self.y * settings.ppg) + int(settings.ppg / 2) + 1)
 
 
 class PixelLoc(Loc):
@@ -148,7 +149,7 @@ class PixelLoc(Loc):
         self._type = 'Pixel'
 
     def to_grid(self):
-        return GridLoc(int(self.x / ppg), int(self.y / ppg))
+        return GridLoc(int(self.x / settings.ppg), int(self.y / settings.ppg))
 
 
 directions = [GridLoc(*d) for d in directions]

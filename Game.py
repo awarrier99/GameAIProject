@@ -1,5 +1,5 @@
 import pygame
-import util
+import settings
 
 from Player import Player
 from util import PixelLoc, GridLoc, Keys, Actions, Colors
@@ -7,17 +7,13 @@ from VisualSensors import VisualSensors
 from World import World
 from Workers import Workers
 
-from argparse import ArgumentParser
-
 
 class Game:
-    def __init__(self, cfg):
+    def __init__(self):
         self.__running = True
         self.screen = None
-        self.init_config(cfg)
         self.player = Player(GridLoc(2, 2).to_pixel())
-        self.world = World(self.player, (self.width, self.height), self.move_frames, self.__ai_mode, self.__pathfinding,
-                           self._enable_dirty_rects)
+        self.world = World(self.player)
         self.all_sprites = None
         self.background = None
         self.clock = pygame.time.Clock()
@@ -27,31 +23,20 @@ class Game:
         self.input_map = {}
         self.input_debounce = 0
 
-    def init_config(self, cfg):
-        self.size = self.width, self.height = cfg['width'] or 1085, cfg['height'] or 735
-        self.__ai_mode = cfg['ai']
-        self.__pathfinding = self.__ai_mode or (not cfg['no_pathfinding'])
-        self._enable_dirty_rects = cfg['dirty_rects']
-        self.move_frames = cfg['move_frames'] or 12
-        self.FPS = cfg['fps'] or 60
-        self._enable_visuals = not cfg['no_visuals']
-        self._enable_stats = not cfg['no_stats']
-
     def setup(self):
-        if self.__ai_mode:
+        if settings.ai_mode:
             print('Running in AI mode. Move controls disabled')
         pygame.init()
-        self.screen = pygame.display.set_mode(self.size, pygame.HWACCEL | pygame.DOUBLEBUF)
+        self.screen = pygame.display.set_mode(settings.size, pygame.HWACCEL | pygame.DOUBLEBUF)
 
-        if self._enable_visuals:
-            self.visual_sensors = [VisualSensors(self.player, *self.size)]
+        self.visual_sensors = [VisualSensors(self.player, *settings.size)]
         pygame.display.set_caption('James and Ashvin\'s Game \'AI\'')
 
         self.background = pygame.Surface(self.screen.get_size())
         self.background.fill((255, 155, 155))
         self.background = self.background.convert()
 
-        if self._enable_dirty_rects:
+        if settings.dirty_rects:
             self.all_sprites = pygame.sprite.LayeredDirty(self.player)
             self.all_sprites.clear(self.screen, self.background)
         else:
@@ -61,27 +46,27 @@ class Game:
 
     def draw_stats(self):
         font = pygame.font.Font('freesansbold.ttf', 16)
-        actor = 'AI' if self.__ai_mode else 'Player'
+        actor = 'AI' if settings.ai_mode else 'Player'
         stat_str = '{}: {} (grid) | {} (pixels) | {} degrees (direction)'
         stats = stat_str.format(actor, self.player.loc.to_grid(), self.player.loc, round(self.player.direction, 2))
         text = font.render(stats, True, Colors.WHITE, Colors.BLACK)
         text_rect = text.get_rect()
-        text_rect.center = (self.width * 0.7, self.height * 0.98)
+        text_rect.center = (settings.width * 0.7, settings.height * 0.98)
         text_rect.width, text_rect.height = 750, 20
         self.screen.blit(text, text_rect)
 
     def redraw(self):
-        if not self._enable_dirty_rects:
+        if not settings.dirty_rects:
             self.screen.blit(self.background, (0, 0))
         wall_rects, old_wall_rects = self.world.draw(self.screen, self.background)
         dirty_rects = self.all_sprites.draw(self.screen)
 
-        if self._enable_visuals:
+        if settings.visuals:
             for vs in self.visual_sensors:
                 vs.draw(self.screen, self.world.draw_path, self.world.goal_loc, self.world.collision_lines)
-        if self._enable_stats:
+        if settings.stats:
             self.draw_stats()
-        if self._enable_dirty_rects:
+        if settings.dirty_rects:
             pygame.display.update(dirty_rects + wall_rects + old_wall_rects)
         else:
             pygame.display.flip()
@@ -102,16 +87,21 @@ class Game:
             x, y = pygame.mouse.get_pos()
             self.world.set_goal(x, y)
         if self.input(pygame.K_F1) and not self.input_debounce:
-            self._enable_stats = not self._enable_stats
+            settings.toggle('stats')
             self.input_debounce = 10
         if self.input(pygame.K_F2) and not self.input_debounce:
-            self._enable_visuals = not self._enable_visuals
+            settings.toggle('visuals')
             self.input_debounce = 10
         if self.input(pygame.K_F3) and not self.input_debounce:
-            self.__ai_mode = not self.__ai_mode
-            if self.__ai_mode:
-                self.__pathfinding = True
+            settings.toggle('ai_mode')
+            if settings.ai_mode:
+                settings.pathfinding = True
             self.world.toggle_ai()
+            self.input_debounce = 10
+        if self.input(pygame.K_F4) and not self.input_debounce:
+            if not settings.ai_mode:
+                settings.toggle('pathfinding')
+                self.world.toggle_pathfinding()
             self.input_debounce = 10
 
     def check_event_queue(self):
@@ -154,20 +144,20 @@ class Game:
 
     def mainloop(self):
         while self.__running:
-            milliseconds = self.clock.tick(self.FPS)
+            milliseconds = self.clock.tick(settings.FPS)
             self.playtime += milliseconds / 1000.0
 
             caption = 'James and Ashvin\'s Game \'AI\'  FPS: {}'.format(round(self.clock.get_fps(), 1))
-            if self.__ai_mode:
+            if settings.ai_mode:
                 caption += ' | AI Mode'
             pygame.display.set_caption(caption)
 
             self.check_event_queue()
-            if not self.__ai_mode:
+            if not settings.ai_mode:
                 self.handle_keys(pygame.key.get_pressed())
 
             self.all_sprites.update()
-            if self._enable_visuals:
+            if settings.visuals:
                 for vs in self.visual_sensors:
                     vs.update()
             self.world.update()

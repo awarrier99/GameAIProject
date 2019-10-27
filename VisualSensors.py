@@ -1,6 +1,6 @@
 import pygame
 import math
-import util
+import settings
 
 from util import Colors
 
@@ -21,10 +21,10 @@ class VisualSensors:
         while i <= self.width:
             pygame.draw.line(screen, Colors.BLACK, (i, 0), (i, self.height))
             pygame.draw.line(screen, Colors.BLACK, (0, i), (self.width, i))
-            if skip == util.ppg - 1:
+            if skip == settings.ppg - 1:
                 skip = 1
             else:
-                skip = util.ppg - 1
+                skip = settings.ppg - 1
             i += skip
 
         l1_p1 = self.player.loc.x + self.player.offset.x / 2, self.player.loc.y + self.player.offset.y / 2
@@ -40,9 +40,11 @@ class VisualSensors:
         for loc in path:
             path_p = loc.to_pixel()
             if loc == goal:
-                pygame.draw.rect(screen, Colors.RED, (path_p.x - util.ppg / 2, path_p.y - util.ppg / 2, util.ppg, util.ppg))
+                pygame.draw.rect(screen, Colors.RED, (path_p.x - settings.ppg / 2, path_p.y - settings.ppg / 2,
+                                                      settings.ppg, settings.ppg))
             else:
-                pygame.draw.rect(screen, Colors.GREEN, (path_p.x - util.ppg / 2, path_p.y - util.ppg / 2, util.ppg, util.ppg))
+                pygame.draw.rect(screen, Colors.GREEN, (path_p.x - settings.ppg / 2, path_p.y - settings.ppg / 2,
+                                                        settings.ppg, settings.ppg))
 
         for line in collision_lines:
             pygame.draw.line(screen, Colors.LIGHT_BLUE, line[0], line[-1])

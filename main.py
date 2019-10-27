@@ -1,4 +1,7 @@
-import util
+"""
+Authors: Ashvin Warrier and James Lowe
+"""
+import settings
 
 from Game import Game
 from argparse import ArgumentParser
@@ -17,6 +20,6 @@ if __name__ == "__main__":
     parser.add_argument('-a', '--ai', action='store_true', help='whether to run in AI mode')
     parser.add_argument('-d', '--dirty-rects', action='store_true', help='whether to use dirty rect rendering')
     config = vars(parser.parse_args())
-    util.ppg = config['ppg'] or 35
-    game = Game(config)
+    settings.init(config)
+    game = Game()
     game.run()

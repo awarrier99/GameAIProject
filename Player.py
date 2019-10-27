@@ -1,5 +1,4 @@
 import pygame
-import math
 
 from pygame.math import Vector2
 from util import PixelLoc, get_direction, in_sight, Colors
@@ -81,4 +80,5 @@ class Player(pygame.sprite.Sprite):
         self.rotate()
 
     def draw(self, screen):
-        pygame.draw.rect(screen, Colors.WHITE, (self.loc.x - self.sensor_range, self.loc.y - self.sensor_range, self.sensor_range * 2, self.sensor_range * 2), 1)
+        pygame.draw.rect(screen, Colors.WHITE, (self.loc.x - self.sensor_range, self.loc.y - self.sensor_range,
+                                                self.sensor_range * 2, self.sensor_range * 2), 1)
