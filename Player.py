@@ -1,8 +1,9 @@
 import pygame
 
 from pygame.math import Vector2
-from util import PixelLoc, get_direction, in_sight, Colors
+from util import PixelLoc, get_direction, in_sight, Colors, end_points
 from Workers import Workers
+from Ray import Ray
 
 
 class Player(pygame.sprite.Sprite):
@@ -41,16 +42,22 @@ class Player(pygame.sprite.Sprite):
         self.sensor_circle = pygame.Rect(0, 0, self.sensor_range, self.sensor_range)
         self.sensor_reset_time = 0
         self.shoot_delay = 25
+        self.shooting = False
+        self.bullet_time = 5
 
     def cb(self, result):
         self._resolved = True
         self.wcb(result)
 
-    def shoot(self):
+    def shoot(self, sprites, walls):
         if self.shoot_delay < 0:
+            ray = Ray()
+            collidables = [sprite.rect for sprite in sprites]
+            ray.get_collider(self.loc, self.direction, collidables, walls)
             self.sensor_range = 400
             self.sensor_reset_time = 10
             self.shoot_delay = 15
+            self.bullet_time = 5
 
     def rotate(self):
         self.image = pygame.transform.rotozoom(self.orig_image, -self.direction, 1)
@@ -67,6 +74,7 @@ class Player(pygame.sprite.Sprite):
 
     def update(self):
         self.sensor_reset_time -= 1
+        self.bullet_time -= 1
         self.shoot_delay -= 1
         if self.sensor_reset_time < 0:
             self.sensor_range = 150
@@ -80,5 +88,9 @@ class Player(pygame.sprite.Sprite):
         self.rotate()
 
     def draw(self, screen):
-        pygame.draw.rect(screen, Colors.WHITE, (self.loc.x - self.sensor_range, self.loc.y - self.sensor_range,
-                                                self.sensor_range * 2, self.sensor_range * 2), 1)
+
+        if self.bullet_time > 0:
+            pygame.draw.line(screen, Colors.YELLOW, (self.loc.x, self.loc.y), (end_points((self.loc.x, self.loc.y), self.direction, 1000)))
+
+        # pygame.draw.rect(screen, Colors.WHITE, (self.loc.x - self.sensor_range, self.loc.y - self.sensor_range,
+        #                                         self.sensor_range * 2, self.sensor_range * 2), 1)

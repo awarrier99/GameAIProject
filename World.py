@@ -91,7 +91,7 @@ class World:
         self.goal_loc = PixelLoc(x, y).to_grid()
 
     def update(self):
-        self.player.scan(self.colliders, self.grid.walls)
+        # self.player.scan(self.colliders, self.grid.walls)
         self.handle_ai_task()
 
         obj = self.frame_meta['obj']
