@@ -6,6 +6,7 @@ from util import PixelLoc, GridLoc, Keys, Actions, Colors
 from VisualSensors import VisualSensors
 from World import World
 from Workers import Workers
+from Gun import Gun
 
 
 class Game:
@@ -28,7 +29,6 @@ class Game:
             print('Running in AI mode. Move controls disabled')
         pygame.init()
         self.screen = pygame.display.set_mode(settings.size, pygame.HWACCEL | pygame.DOUBLEBUF)
-
         self.visual_sensors = [VisualSensors(self.player, *settings.size)]
         pygame.display.set_caption('James and Ashvin\'s Game \'AI\'')
 
@@ -40,7 +40,7 @@ class Game:
             self.all_sprites = pygame.sprite.LayeredDirty(self.player)
             self.all_sprites.clear(self.screen, self.background)
         else:
-            self.all_sprites = pygame.sprite.Group(*self.world.colliders, self.player)
+            self.all_sprites = pygame.sprite.Group(*self.world.colliders, *self.world.guns, self.player)
 
         self.screen.blit(self.background, (0, 0))
 

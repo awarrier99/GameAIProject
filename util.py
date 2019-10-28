@@ -296,7 +296,6 @@ def in_sight(obj_loc, obj_fov, obj_direction, collidables, walls):
 
             angle = abs(obj_direction - cur_direction)
             if angle <= (obj_fov / 2.0) or angle >= (360 - (obj_fov / 2.0)):
-                print(angle)
                 in_fov.append(collidable)
                 break
 
