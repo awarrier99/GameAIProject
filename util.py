@@ -76,6 +76,7 @@ class Colors:
     GREEN = (0, 255, 0)
     RED = (255, 0, 0)
     LIGHT_BLUE = (0, 191, 255)
+    YELLOW = (255, 255, 0)
 
 
 class Loc:
@@ -321,6 +322,22 @@ def in_sight(obj_loc, obj_fov, obj_direction, collidables, walls):
     return visible
 
 
+def line_of_sight(obj_loc, obj_direction, collidables, walls):
+    in_fov = []
+    x, y = end_points((obj_loc.x, obj_loc.y), obj_direction, 1000)
+    collision_line = create_line(obj_loc, Loc(x, y), 1)
+    for i in range(1, len(collision_line)):
+        grid_loc = PixelLoc(*collision_line[i]).to_grid()
+        # print(collision_line[i], grid_loc)
+        if grid_loc in walls:
+            break
+        for c in collidables:
+            if c.collidepoint(collision_line[i]):
+                return c
+
+
+
+
 def get_direction(start, end):
     dx = end.x - start.x
     dy = end.y - start.y
@@ -334,9 +351,7 @@ def create_line(start, end, step):
     if start == end:
         return [start.as_tuple()]
     if end.x < start.x:
-        t = end
-        end = start
-        start = t
+        step = -step
     if end.x == start.x:
         ys = range(min(start.y, end.y), max(start.y, end.y))
         xs = [start.x for _ in ys]
@@ -351,3 +366,9 @@ def create_line(start, end, step):
 
 def line_length(start, end):
     return math.sqrt((end[0] - start[0]) ** 2 + (end[1] - start[1]) ** 2)
+
+
+def end_points(start, direction, length):
+    return start[0] + length * math.cos(math.radians(direction)), start[1] + length * math.sin(
+        math.radians(direction))
+

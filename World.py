@@ -1,10 +1,12 @@
 import pygame
 import settings
+import random
 
 from Grid import Grid
-from util import PixelLoc, GridLoc, Queue, Colors, line_length
+from util import PixelLoc, GridLoc, Colors, line_length, Loc
 from traceback import print_exception
 from Collider import Collider
+from Gun import Pistol, SubMachine1, SubMachine2, AssualtRifle1, AssualtRifle2
 
 
 class World:
@@ -23,10 +25,33 @@ class World:
         self.new_wall_rects = []
         self.old_wall_rects = []
         self.wall_thickness = 6
+        self.guns = []
+        self.sprites = pygame.sprite.Group(self.guns)
 
         locs = [(5, 5), (8, 5), (4, 6), (3, 5)]
         self.colliders = [Collider(GridLoc(*loc).to_pixel()) for loc in locs]
         self.collision_lines = []
+
+    def spawn_gun(self):
+        gun_type = random.randint(1, 10)
+        x = random.randint(0, self.grid.width)
+        y = random.randint(0, self.grid.height)
+        gun = None
+        while self.grid[Loc(x, y)].is_wall():
+            x = random.randint(0, self.grid.width)
+            y = random.randint(0, self.grid.height)
+        if gun_type == 1 or gun_type == 2 or gun_type == 3:
+            gun = Pistol(GridLoc(x, y).to_pixel())
+        elif gun_type == 4 or gun_type == 5:
+            gun = SubMachine1(GridLoc(x, y).to_pixel())
+        elif gun_type == 6 or gun_type == 7:
+            gun = SubMachine2(GridLoc(x, y).to_pixel())
+        elif gun_type == 8 or gun_type == 9:
+            gun = AssualtRifle1(GridLoc(x, y).to_pixel())
+        elif gun_type == 10:
+            gun = AssualtRifle2(GridLoc(x, y).to_pixel())
+        self.sprites.add(gun)
+        self.guns.append(gun)
 
     def scan_callback(self, results):
         self.collision_lines = []
@@ -44,6 +69,15 @@ class World:
         self.goal_loc = PixelLoc(x, y).to_grid()
 
     def update(self):
+        if len(self.guns) < 5:
+            self.spawn_gun()
+        for gun in self.guns:
+            col = self.player.rect.colliderect(gun.rect)
+            if col:
+                self.player.gun = gun
+                self.guns.remove(gun)
+                self.sprites.remove(gun)
+
         self.player.scan(self.colliders, self.grid.walls)
 
     def toggle_ai(self):
@@ -95,6 +129,7 @@ class World:
         return wall_rects
 
     def draw(self, screen, background):
+        self.sprites.draw(screen)
         if settings.dirty_rects:
             new_walls = [w for w in self.grid.walls if w not in self.grid._last_walls]
             old_walls = [w for w in self.grid._last_walls if w not in self.grid.walls]

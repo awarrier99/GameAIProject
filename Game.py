@@ -29,7 +29,6 @@ class Game:
             print('Running in AI mode. Move controls disabled')
         pygame.init()
         self.screen = pygame.display.set_mode(settings.size, pygame.HWACCEL | pygame.DOUBLEBUF)
-
         self.visual_sensors = [VisualSensors(self.player, *settings.size)]
         pygame.display.set_caption('James and Ashvin\'s Game \'AI\'')
 
@@ -43,7 +42,7 @@ class Game:
         else:
             bot = Bot(GridLoc(3, 3).to_pixel(), self.world)
             self.bots = [bot]
-            self.all_sprites = pygame.sprite.Group(*self.world.colliders, self.player, *self.bots)
+            self.all_sprites = pygame.sprite.Group(*self.world.colliders, *self.world.guns, self.player, *self.bots)
 
         self.screen.blit(self.background, (0, 0))
 
@@ -85,7 +84,7 @@ class Game:
         if self.input('mouse_down') and self.input(pygame.K_1):
             self.last_grid = self.world.create_wall(self.last_grid, self.input_map['wall_action'])
         if self.input('mouse_down'):
-            self.player.shoot()
+            self.player.shoot(self.world.colliders, self.world.grid.walls)
         if self.input('mouse_down') and self.input(pygame.K_2):
             x, y = pygame.mouse.get_pos()
             self.world.set_goal(x, y)

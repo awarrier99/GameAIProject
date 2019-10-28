@@ -28,12 +28,11 @@ class VisualSensors:
             i += skip
 
         l1_p1 = self.player.loc.x + self.player.offset.x / 2, self.player.loc.y + self.player.offset.y / 2
-        x1, y1 = l1_p1
-        l1_p2 = x1 + 700 * math.cos(math.radians(self.field_of_view / 2 + self.player.direction)), y1 + 700 * math.sin(
+        l1_p2 = l1_p1[0] + 700 * math.cos(math.radians(self.field_of_view / 2 + self.player.direction)), l1_p1[1] + 700 * math.sin(
             math.radians(self.field_of_view / 2 + self.player.direction))
         pygame.draw.line(screen, Colors.GREEN, l1_p1, l1_p2)
 
-        l2_p2 = x1 + 700 * math.cos(math.radians(-self.field_of_view / 2 + self.player.direction)), y1 + 700 * math.sin(
+        l2_p2 = l1_p1[0] + 700 * math.cos(math.radians(-self.field_of_view / 2 + self.player.direction)), l1_p1[1] + 700 * math.sin(
             math.radians(-self.field_of_view / 2 + self.player.direction))
         pygame.draw.line(screen, Colors.GREEN, l1_p1, l2_p2)
 
