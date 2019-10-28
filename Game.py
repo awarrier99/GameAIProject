@@ -2,10 +2,11 @@ import pygame
 import settings
 
 from Player import Player
-from util import PixelLoc, GridLoc, Keys, Actions, Colors
+from util import GridLoc, Keys, Actions, Colors
 from VisualSensors import VisualSensors
 from World import World
 from Workers import Workers
+from Bot import Bot
 
 
 class Game:
@@ -21,7 +22,7 @@ class Game:
         self.visual_sensors = None
         self.last_grid = GridLoc(-1, -1)
         self.input_map = {}
-        self.input_debounce = 0
+        self.input_debounce = self.bot_debounce = 0
 
     def setup(self):
         if settings.ai_mode:
@@ -40,7 +41,9 @@ class Game:
             self.all_sprites = pygame.sprite.LayeredDirty(self.player)
             self.all_sprites.clear(self.screen, self.background)
         else:
-            self.all_sprites = pygame.sprite.Group(*self.world.colliders, self.player)
+            bot = Bot(GridLoc(3, 3).to_pixel(), self.world)
+            self.bots = [bot]
+            self.all_sprites = pygame.sprite.Group(*self.world.colliders, self.player, *self.bots)
 
         self.screen.blit(self.background, (0, 0))
 
@@ -80,7 +83,7 @@ class Game:
         if self.input_debounce > 0:
             self.input_debounce -= 1
         if self.input('mouse_down') and self.input(pygame.K_1):
-            self.last_grid = self.world.create_wall(self.last_grid)
+            self.last_grid = self.world.create_wall(self.last_grid, self.input_map['wall_action'])
         if self.input('mouse_down'):
             self.player.shoot()
         if self.input('mouse_down') and self.input(pygame.K_2):
@@ -118,6 +121,7 @@ class Game:
                 ins[event.key] = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 ins['mouse_down'] = True
+                ins['wall_action'] = self.world.get_wall_action()
             elif event.type == pygame.MOUSEBUTTONUP:
                 ins['mouse_down'] = False
                 self.last_grid = GridLoc(-1, -1)
@@ -126,21 +130,21 @@ class Game:
 
     def handle_keys(self, keys):
         if Keys.upright(keys):
-            self.world.move(self.player, Actions.UR)
+            self.player.move(Actions.UR)
         elif Keys.downright(keys):
-            self.world.move(self.player, Actions.DR)
+            self.player.move(Actions.DR)
         elif Keys.right(keys):
-            self.world.move(self.player, Actions.R)
+            self.player.move(Actions.R)
         elif Keys.upleft(keys):
-            self.world.move(self.player, Actions.UL)
+            self.player.move(Actions.UL)
         elif Keys.downleft(keys):
-            self.world.move(self.player, Actions.DL)
+            self.player.move(Actions.DL)
         elif Keys.left(keys):
-            self.world.move(self.player, Actions.L)
+            self.player.move(Actions.L)
         elif Keys.up(keys):
-            self.world.move(self.player, Actions.U)
+            self.player.move(Actions.U)
         elif Keys.down(keys):
-            self.world.move(self.player, Actions.D)
+            self.player.move(Actions.D)
 
     def mainloop(self):
         while self.__running:

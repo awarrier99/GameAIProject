@@ -3,9 +3,9 @@ from util import pathfind, euclidean_heuristic
 
 
 class AI:
-    def __init__(self, grid, cb, ecb, heuristic=euclidean_heuristic):
+    def __init__(self, neighbors, cb, ecb, heuristic=euclidean_heuristic):
         self._resolved = True
-        self.grid = grid
+        self.neighbors = neighbors
         self.heuristic = heuristic
         self.wcb = cb
         self.ecb = ecb
@@ -19,4 +19,5 @@ class AI:
         if self._resolved and (not self._last_locs == (start, end)):
             self._resolved = False
             self._last_locs = (start, end)
-            Workers.delegate(pathfind, (self.grid, start, end, self.heuristic), callback=self.cb, error_callback=self.ecb)
+            Workers.delegate(pathfind, (self.neighbors, start, end, self.heuristic), callback=self.cb,
+                             error_callback=self.ecb)

@@ -244,7 +244,7 @@ def euclidean_heuristic(node, goal):
     return dist(node, goal)
 
 
-def pathfind(grid, start, end, heuristic=euclidean_heuristic):
+def pathfind(neighbors, start, end, heuristic=euclidean_heuristic):
     nodes = PriorityQueue()
     visited = set()
 
@@ -253,7 +253,7 @@ def pathfind(grid, start, end, heuristic=euclidean_heuristic):
     while not current == end:
         if current not in visited:
             visited.add(current)
-            for neighbor in grid.neighbors(current):
+            for neighbor in neighbors(current):
                 neighbor.parent = current
                 neighbor.cost += current.cost
 
