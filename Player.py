@@ -53,7 +53,7 @@ class Player(pygame.sprite.Sprite):
         self.wcb(result)
 
     def shoot(self, sprites, walls):
-        if self.shoot_delay < 0 and self.gun.ammo > 0:
+        if self.shoot_delay < 0 < self.gun.ammo:
             ray = Ray()
             collidables = [sprite.rect for sprite in sprites]
             ray.get_collider(self.loc, self.direction, collidables, walls)
